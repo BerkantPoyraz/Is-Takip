@@ -1,0 +1,76 @@
+﻿<Page x:Class="WorkTrackingWpf.CreateCompaniesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Firma Ekle"
+      Height="1080" Width="1920"
+      Background="#ecf0f1">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Başlık -->
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.Row="0" Margin="0,10,0,10">
+            <TextBlock FontSize="24" FontWeight="Bold" Foreground="#1abc9c"><Run Text="Firma Ekle"/></TextBlock>
+        </StackPanel>
+
+        <!-- Firma Giriş Alanları -->
+        <Grid Grid.Row="0" Margin="166,40,342,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="259*" />
+                <ColumnDefinition Width="258*" />
+                <ColumnDefinition Width="258*" />
+                <ColumnDefinition Width="258*" />
+                <ColumnDefinition Width="847*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Firma Adı -->
+            <StackPanel Grid.Column="0" Orientation="Vertical" Margin="10,10,129,10" Grid.ColumnSpan="2">
+                <Label Content="Firma Adı:" />
+                <TextBox x:Name="CompanyNameTextBox" Height="40" Margin="5" Width="236" />
+            </StackPanel>
+
+            <!-- Firma Ünvanı -->
+            <StackPanel Grid.Column="1" Orientation="Vertical" Margin="80,10,59,10" Grid.ColumnSpan="2">
+                <Label Content="Firma Ünvanı:" />
+                <TextBox x:Name="CompanyTitleTextBox" Height="40" Margin="5" Width="236" />
+            </StackPanel>
+
+            <!-- Adres -->
+            <StackPanel Grid.Column="2" Orientation="Vertical" Margin="149,10,608,10" Grid.ColumnSpan="3">
+                <Label Content="Adres:" />
+                <TextBox x:Name="CompanyAddressTextBox" Height="40" Margin="5" Width="235" />
+            </StackPanel>
+
+            <!-- Vergi Dairesi -->
+            <StackPanel Grid.Column="4" Orientation="Vertical" Margin="31,10,350,10">
+                <Label Content="Vergi Dairesi:" />
+                <TextBox x:Name="TaxOfficeTextBox" Height="40" Margin="5" Width="236" />
+            </StackPanel>
+
+            <!-- Vergi No -->
+            <StackPanel Grid.Column="4" Orientation="Vertical" Margin="289,10,71,10">
+                <Label Content="Vergi No:" />
+                <TextBox x:Name="TaxNumberTextBox" Height="40" Margin="5" Width="235" />
+            </StackPanel>
+
+            <!-- Firma Kaydet Butonu -->
+            <Button x:Name="SaveCompanyButton" Content="Firma Kaydet" Background="#1ABC9C" Foreground="White" FontWeight="Bold" 
+                    Grid.Column="3" Margin="10,106,26,-50" Click="SaveCompanyButton_Click" />
+        </Grid>
+
+        <!-- Firma Bilgileri Tablosu -->
+        <TextBlock Text="Firma Bilgileri" FontSize="24" FontWeight="Bold" Margin="5,209,5,10" Grid.RowSpan="2" />
+        <DataGrid x:Name="CompanyDataGrid" AutoGenerateColumns="False" IsReadOnly="True" BorderBrush="#BDC3C7" BorderThickness="1" Margin="10,119,342,10" Grid.Row="1">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Firma Adı" Binding="{Binding CompanyName}" Width="*" />
+                <DataGridTextColumn Header="Firma Ünvanı" Binding="{Binding CompanyTitle}" Width="*" />
+                <DataGridTextColumn Header="Adres" Binding="{Binding Address}" Width="*" />
+                <DataGridTextColumn Header="Vergi Dairesi" Binding="{Binding TaxOffice}" Width="*" />
+                <DataGridTextColumn Header="Vergi No" Binding="{Binding TaxNumber}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>
