@@ -7,8 +7,6 @@
         public int ProjectId { get; set; }
         public int? ProjectTaskId { get; set; }
         public DateTime? StartTime { get; set; }
-        public DateTime? LunchBreakStart { get; set; }
-        public DateTime? LunchBreakEnd { get; set; }
         public DateTime? EndTime { get; set; }  
 
         public User User { get; set; }

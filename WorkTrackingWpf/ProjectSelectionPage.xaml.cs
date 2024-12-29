@@ -272,8 +272,6 @@ namespace WorkTrackingWpf
                         ProjectId = selectedProject.ProjectId,
                         ProjectTaskId = selectedTask.ProjectTaskId,
                         StartTime = currentTime,
-                        LunchBreakStart = null,
-                        LunchBreakEnd = null
                     };
                     dbContext.WorkLog.Add(newWorkLog);
 

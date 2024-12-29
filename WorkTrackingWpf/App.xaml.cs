@@ -66,8 +66,6 @@ namespace WorkTrackingWpf
                     }
                     else
                     {
-                        MessageBox.Show("Veritabanı zaten güncel, uygulamak için bekleyen migration yok.",
-                            "Bilgilendirme", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
             }
