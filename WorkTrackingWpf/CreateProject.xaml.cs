@@ -6,6 +6,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Windows.Media;
+using Microsoft.Extensions.Options;
 
 namespace WorkTrackingWpf
 {
@@ -17,7 +19,6 @@ namespace WorkTrackingWpf
         {
             InitializeComponent();
             _context = context;
-
             Loaded += (s, e) => LoadData();
         }
 
@@ -27,6 +28,7 @@ namespace WorkTrackingWpf
             LoadContractTypes();
             LoadContractCurrencies();
             LoadProjects();
+            LoadTasks();
         }
 
         private void LoadProjects()
@@ -36,13 +38,14 @@ namespace WorkTrackingWpf
                 .Include(p => p.ContractType)
                 .ToList();
 
-            if (projects == null || !projects.Any())
-            {
-                MessageBox.Show("Projeler bulunamadı.");
-                return;
-            }
             ProjectsDataGrid.ItemsSource = projects;
+
+            TaskSelectionComboBox.ItemsSource = projects;
+            TaskSelectionComboBox.DisplayMemberPath = "ProjectName";
+            TaskSelectionComboBox.SelectedValuePath = "ProjectId";
         }
+
+
         private void LoadCompanies()
         {
             var companies = _context.Companies.ToList();
@@ -62,6 +65,12 @@ namespace WorkTrackingWpf
         private void LoadContractCurrencies()
         {
             ContractCurrencyComboBox.ItemsSource = new List<string> { "TL", "USD", "EUR" };
+        }
+
+        private void LoadTasks()
+        {
+            var tasks = _context.Tasks.ToList();
+            TaskSelectionListBox.ItemsSource = tasks.Select(t => new TaskWithSelection { Task = t }).ToList();
         }
 
         private void ClearFormFields()
@@ -91,42 +100,59 @@ namespace WorkTrackingWpf
 
             DateTime? projectEndDate = ProjectEndDatePicker.SelectedDate;
 
-            decimal contractAmount = decimal.TryParse(ContractAmountTextBox.Text, out var parsedContractAmount) ? parsedContractAmount : 0;
-            decimal unitAmount = decimal.TryParse(UnitAmountTextBox.Text, out var parsedUnitAmount) ? parsedUnitAmount : 0;
+            decimal contractAmount = 0;
+            decimal unitAmount = 0;
+            decimal totalAmount = 0;
 
-            decimal totalAmount = contractAmount * unitAmount; 
+            if (decimal.TryParse(ContractAmountTextBox.Text, out var parsedContractAmount))
+            {
+                contractAmount = parsedContractAmount;
+            }
+
+            if (decimal.TryParse(UnitAmountTextBox.Text, out var parsedUnitAmount))
+            {
+                unitAmount = parsedUnitAmount;
+            }
+
+            totalAmount = contractAmount * unitAmount;
+
+            ContractCurrency selectedCurrency;
+            if (!Enum.TryParse(ContractCurrencyComboBox.SelectedItem.ToString(), out selectedCurrency))
+            {
+                MessageBox.Show("Geçersiz sözleşme para birimi seçildi.");
+                return;
+            }
 
             var newProject = new Project
             {
                 ProjectNumber = JobNumberTextBox.Text,
                 ProjectName = JobNameTextBox.Text,
-                ProjectStartTime = ProjectStartDatePicker.SelectedDate.Value, 
-                ProjectEndTime = projectEndDate.HasValue ? projectEndDate.Value : (DateTime?)null,
+                ProjectStartTime = ProjectStartDatePicker.SelectedDate.Value,
+                ProjectEndTime = projectEndDate,
                 CompanyId = (int)CompanyComboBox.SelectedValue,
                 ContractTypeId = (int)ContractTypeComboBox.SelectedValue,
                 ContractAmount = contractAmount,
                 UnitAmount = unitAmount,
-                ContractCurrency = (ContractCurrency)ContractCurrencyComboBox.SelectedIndex,
-                TotalAmount = totalAmount 
+                ContractCurrency = selectedCurrency,
+                TotalAmount = totalAmount,
+                ProjectStatus = ProjectStatus.Aktif
             };
 
             _context.Projects.Add(newProject);
             _context.SaveChanges();
+
             LoadProjects();
-            ClearFormFields(); 
+            ClearFormFields();
+
             MessageBox.Show("Proje başarıyla kaydedildi.");
         }
-
 
         private void UpdateProject_Click(object sender, RoutedEventArgs e)
         {
             if (ProjectsDataGrid.SelectedItem is Project selectedProject)
             {
-                Console.WriteLine($"Selected project ID: {selectedProject.ProjectId}");
-
                 UpdateProjectWindow updateWindow = new UpdateProjectWindow(_context, selectedProject.ProjectId);
-                updateWindow.Show(); 
-
+                updateWindow.Show();
                 LoadProjects();
             }
             else
@@ -135,68 +161,96 @@ namespace WorkTrackingWpf
             }
         }
 
-
-        private void ProjectsDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (ProjectsDataGrid.SelectedItem != null)
-            {
-                var selectedProject = ProjectsDataGrid.SelectedItem as Project;
-                if (selectedProject != null)
-                {
-                    Console.WriteLine($"Seçilen proje ID: {selectedProject.ProjectId}");
-                }
-            }
-        }
-    
-
         private void SaveJobButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ProjectSelectionComboBox.SelectedValue == null)
+            if (TaskSelectionComboBox.SelectedValue == null)
             {
                 MessageBox.Show("Lütfen bir proje seçiniz.");
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(TaskNameTextBox.Text))
+            int selectedProjectId = (int)TaskSelectionComboBox.SelectedValue;
+
+            var selectedTasks = TaskSelectionListBox.Items
+                .OfType<TaskWithSelection>()
+                .Where(t => t.IsChecked)
+                .Select(t => t.Task)
+                .ToList();
+
+            if (!selectedTasks.Any())
             {
-                MessageBox.Show($"JobNameTextBox Text: {TaskNameTextBox.Text ?? "null"}");
-                MessageBox.Show("Lütfen bir iş adı giriniz.");
+                MessageBox.Show("Lütfen en az bir görev seçiniz.");
                 return;
             }
 
-            int selectedProjectId = (int)ProjectSelectionComboBox.SelectedValue;
-
-            var newProjectTask = new ProjectTask
+            foreach (var task in selectedTasks)
             {
-                TaskName = TaskNameTextBox.Text.Trim(),
-                ProjectId = selectedProjectId
-            };
+                if (!_context.ProjectTasks.Any(pt => pt.ProjectId == selectedProjectId && pt.TaskId == task.TaskId))
+                {
+                    var newProjectTask = new ProjectTask
+                    {
+                        ProjectId = selectedProjectId,
+                        TaskId = task.TaskId
+                    };
 
-            _context.ProjectTasks.Add(newProjectTask);
+                    _context.ProjectTasks.Add(newProjectTask);
+                }
+            }
+
+            _context.SaveChanges();
+            MessageBox.Show("Görevler projeye başarıyla atanmıştır.");
+        }
+
+
+        private void AddTaskButton_Click(object sender, RoutedEventArgs e)
+        {
+            string taskName = SaveNewTaskBox.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(taskName))
+            {
+                MessageBox.Show("Görev adı boş olamaz.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (_context.Tasks.Any(t => t.TaskName == taskName))
+            {
+                MessageBox.Show("Bu adla bir görev zaten mevcut.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var newTask = new NewTask { TaskName = taskName };
+            _context.Tasks.Add(newTask);
             _context.SaveChanges();
 
-            TaskNameTextBox.Clear();
+            LoadTasks();
+            MessageBox.Show("Görev başarıyla eklendi.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+            SaveNewTaskBox.Clear();
         }
 
         private void ProjectSelectionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ProjectSelectionComboBox.SelectedValue == null)
+            if (TaskSelectionComboBox.SelectedValue == null)
                 return;
 
-            int selectedProjectId = (int)ProjectSelectionComboBox.SelectedValue;
+            int selectedProjectId = (int)TaskSelectionComboBox.SelectedValue;
 
             var projectTasks = _context.ProjectTasks
-                .Where(task => task.ProjectId == selectedProjectId)
-                .Select(task => task.TaskName)
+                .Where(pt => pt.ProjectId == selectedProjectId)
+                .Select(pt => pt.TaskId)
                 .ToList();
-        }
 
-        private string FormatCurrency(decimal value)
-        {
-            return value.ToString("N2", CultureInfo.InvariantCulture);
-        }
+            var tasksWithSelection = _context.Tasks
+                .ToList()
+                .Select(task => new TaskWithSelection
+                {
+                    Task = task,
+                    IsChecked = projectTasks.Contains(task.TaskId)
+                })
+                .ToList();
 
-        private void SaveContractTypeButton_Click(object sender, RoutedEventArgs e)
+            TaskSelectionListBox.ItemsSource = tasksWithSelection;
+        }
+        private async void SaveContractTypeButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(ContractTypeNameTextBox.Text))
             {
@@ -204,38 +258,60 @@ namespace WorkTrackingWpf
                 return;
             }
 
+            var contractTypeName = ContractTypeNameTextBox.Text;
+
             var newContractType = new ContractType
             {
-                ContractTypeName = ContractTypeNameTextBox.Text
+                ContractTypeName = contractTypeName
             };
 
             _context.ContractTypes.Add(newContractType);
-            _context.SaveChanges();
-            MessageBox.Show("Sözleşme türü başarıyla kaydedildi.");
+            await _context.SaveChangesAsync();
 
+            MessageBox.Show("Sözleşme türü başarıyla kaydedildi!");
             ContractTypeNameTextBox.Clear();
         }
 
-        // private void ToggleProjectStatus_Click(object sender, RoutedEventArgs e)
-        // {
-        //     if (ProjectsDataGrid.SelectedItem is Project selectedProject)
-        //     {
-        //         // Toggle project status
-        //         selectedProject.IsActive = !selectedProject.IsActive;
-        //
-        //         // Save the changes
-        //         _context.SaveChanges();
-        //
-        //         // Refresh the data grid to reflect changes
-        //         ProjectsDataGrid.Items.Refresh();
-        //
-        //         MessageBox.Show("Project status has been toggled.");
-        //     }
-        //     else
-        //     {
-        //         MessageBox.Show("Please select a project.");
-        //     }
-        // }
+        private void SetStatusActive_Click(object sender, RoutedEventArgs e)
+        {
+            if (ProjectsDataGrid.SelectedItem is Project selectedProject)
+            {
+                selectedProject.ProjectStatus = ProjectStatus.Aktif;
+                SaveProjectStatus(selectedProject); 
+                LoadProjects();
+            }
+            else
+            {
+                MessageBox.Show("Lütfen bir proje seçiniz.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
 
+        private void SetStatusPassive_Click(object sender, RoutedEventArgs e)
+        {
+            if (ProjectsDataGrid.SelectedItem is Project selectedProject)
+            {
+                selectedProject.ProjectStatus = ProjectStatus.Pasif;
+                SaveProjectStatus(selectedProject); 
+                LoadProjects();
+            }
+            else
+            {
+                MessageBox.Show("Lütfen bir proje seçiniz.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void SaveProjectStatus(Project project)
+        {
+            var dbProject = _context.Projects.Find(project.ProjectId);
+            if (dbProject != null)
+            {
+                dbProject.ProjectStatus = project.ProjectStatus; 
+                _context.SaveChanges(); 
+            }
+            else
+            {
+                MessageBox.Show("Seçilen proje veritabanında bulunamadı.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }

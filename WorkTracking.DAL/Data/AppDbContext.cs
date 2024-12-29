@@ -34,12 +34,11 @@ namespace WorkTracking.DAL.Data
             modelBuilder.Entity<Project>()
                 .HasKey(p => p.ProjectId);
 
-                       modelBuilder.Entity<Project>()
+            modelBuilder.Entity<Project>()
                 .HasOne(p => p.ContractType)
                 .WithMany()
                 .HasForeignKey(p => p.ContractTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
-
 
             modelBuilder.Entity<Project>()
                 .HasMany(p => p.ProjectTasks)
@@ -62,7 +61,38 @@ namespace WorkTracking.DAL.Data
                 .WithMany(t => t.WorkLogs)
                 .HasForeignKey(w => w.ProjectTaskId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProjectTask>()
+                .HasOne(pt => pt.Task)
+                .WithMany(nt => nt.ProjectTasks)
+                .HasForeignKey(pt => pt.TaskId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<NewTask>()
+                .HasKey(C => C.TaskId);
+
+            modelBuilder.Entity<ContractType>()
+                .HasKey(c => c.ContractTypeId);
+
+            modelBuilder.Entity<UserReports>()
+                .HasKey(ur => ur.UserReportsId);
+
+            modelBuilder.Entity<UserReports>()
+                .HasOne(ur => ur.User)
+                .WithMany()
+                .HasForeignKey(ur => ur.UserId);
+
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<UserReports>()
+                .Property(u => u.Status)
+                .HasConversion<int>();
+
+        modelBuilder.Entity<TaskWithSelection>().HasNoKey();
+
+            base.OnModelCreating(modelBuilder);
         }
+
 
         public DbSet<User> Users { get; set; }
         public DbSet<Project> Projects { get; set; }
@@ -70,5 +100,9 @@ namespace WorkTracking.DAL.Data
         public DbSet<WorkLog> WorkLog { get; set; }
         public DbSet<ProjectTask> ProjectTasks { get; set; }
         public DbSet<ContractType> ContractTypes { get; set; }
+        public DbSet<NewTask> Tasks { get; set; }
+        public DbSet<TaskWithSelection> TaskWithSelections { get; set; }
+        public DbSet<UserReports> UserReports { get; set; }
+        public object WorkLogs { get; set; }
     }
 }

@@ -72,7 +72,6 @@ namespace WorkTrackingWpf
                 MessageBox.Show($"Firma bilgileri yüklenirken hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
         private void ClearFields()
         {
             CompanyNameTextBox.Clear();

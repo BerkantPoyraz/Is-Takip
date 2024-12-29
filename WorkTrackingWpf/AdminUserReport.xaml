@@ -1,7 +1,11 @@
-﻿<Window x:Class="WorkTrackingWpf.ReportsLog"
+﻿<Window x:Class="WorkTrackingWpf.AdminUserReport"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Çalışma Onay" Height="851" Width="1236" WindowStartupLocation="CenterScreen"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WorkTrackingWpf"
+        mc:Ignorable="d"
+        Title="Kullanıcı Rapor" Height="851" Width="1236" WindowStartupLocation="CenterScreen"
         Loaded="Window_Loaded">
 
     <Grid>
@@ -11,10 +15,11 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Yıl ve Ay Seçim Alanları -->
+        <!-- Kullanıcı seçimi ComboBox -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="10" Grid.Row="0">
             <Label Content="Yıl:" VerticalAlignment="Center" Margin="5"/>
             <ComboBox x:Name="YearComboBox" HorizontalAlignment="Stretch" Margin="5" SelectionChanged="YearComboBox_SelectionChanged"/>
+
             <Label Content="Ay:" VerticalAlignment="Center" Margin="5"/>
             <ComboBox x:Name="MonthComboBox" HorizontalAlignment="Stretch" Margin="5" SelectionChanged="MonthComboBox_SelectionChanged">
                 <ComboBoxItem Content="Ocak" Tag="1"/>
@@ -30,8 +35,14 @@
                 <ComboBoxItem Content="Kasım" Tag="11"/>
                 <ComboBoxItem Content="Aralık" Tag="12"/>
             </ComboBox>
+
+            <Label Content="Kullanıcı:" VerticalAlignment="Center" Margin="5"/>
+            <ComboBox x:Name="UserComboBox" HorizontalAlignment="Stretch" Margin="5" SelectionChanged="UserComboBox_SelectionChanged"/>
+
             <Button Content="Filtrele" Width="100" Height="30" Margin="10,0,0,0" VerticalAlignment="Center" Click="FilterButton_Click"/>
         </StackPanel>
+
+        <!-- Rapor Tablosu -->
         <DataGrid Name="ReportsDataGrid" AutoGenerateColumns="False" Margin="10" Grid.Row="1" SelectionMode="Single" HorizontalScrollBarVisibility="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsReadOnly="True" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown" PreviewMouseDoubleClick="DataGrid_PreviewMouseDoubleClick" IsHitTestVisible="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Gün" Binding="{Binding WorkDate}" Width="150"/>

@@ -5,10 +5,12 @@ namespace WorkTracking.DAL.Repositories
 {
     public interface IUserRepository
     {
-        Task<User> GetUserByUsernameAndPasswordAsync(string username, string password);
         Task<User> GetUserByCredentialsAsync(string username, string password);
-        User GetLoggedInUser();
+        Task<User> GetUserByUserNameAsync(string username);
+        Task AddAsync(User user);
         Task UpdateAsync(User user);
         Task DeleteAsync(int userId);
+        User GetLoggedInUser();
+        User GetLoggedInUser(int userId);
     }
 }

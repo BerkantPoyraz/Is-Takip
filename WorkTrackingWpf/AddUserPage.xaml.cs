@@ -21,7 +21,6 @@ namespace WorkTrackingWpf
         {
             InitializeComponent();
 
-            // IUserRepository'yi DI container'dan al
             _userRepository = App.ServiceProvider.GetRequiredService<IUserRepository>();
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
@@ -29,9 +28,6 @@ namespace WorkTrackingWpf
 
             LoadUsers();
         }
-
-
-
         private void LoadUsers()
         {
             try
@@ -120,7 +116,6 @@ namespace WorkTrackingWpf
                     {
                         await _userRepository.DeleteAsync(selectedUser.UserId);
 
-                        // Kullanıcıları yeniden yükleyin
                         UserListView.ItemsSource = await GetUsersAsync();
                     }
                     catch (Exception ex)

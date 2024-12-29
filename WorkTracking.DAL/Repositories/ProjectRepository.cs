@@ -23,8 +23,12 @@ namespace WorkTracking.DAL.Repositories
 
         public async Task<List<ProjectTask>> GetProjectTasksByProjectIdAsync(int projectId)
         {
-            return await _context.ProjectTasks.Where(t => t.ProjectId == projectId).ToListAsync();
+            return await _context.ProjectTasks
+                .Include(pt => pt.Task)
+                .Where(pt => pt.ProjectId == projectId)
+                .ToListAsync();
         }
+
         public Project GetProjectById(int projectId)
         {
             return _context.Projects.FirstOrDefault(p => p.ProjectId == projectId);

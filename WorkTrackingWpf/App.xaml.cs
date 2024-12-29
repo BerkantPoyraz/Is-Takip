@@ -29,7 +29,6 @@ namespace WorkTrackingWpf
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")),
                 ServiceLifetime.Transient);
 
-            // Register repositories
             serviceCollection.AddScoped<IProjectRepository, ProjectRepository>();
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
             serviceCollection.AddScoped<ICompanyRepository, CompanyRepository>();
@@ -38,6 +37,46 @@ namespace WorkTrackingWpf
             serviceCollection.AddTransient<ReportsLog>();
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
+
+            EnsureDatabaseMigrated();
+        }
+
+        private void EnsureDatabaseMigrated()
+        {
+            try
+            {
+                using (var scope = ServiceProvider.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                    if (!dbContext.Database.CanConnect())
+                    {
+                        // Veritabanı yoksa oluştur
+                        dbContext.Database.EnsureCreated();
+                        MessageBox.Show("Veritabanı bulunamadı. Yeni bir veritabanı oluşturuldu.",
+                            "Bilgilendirme", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+
+                    var pendingMigrations = dbContext.Database.GetPendingMigrations().ToList();
+                    if (pendingMigrations.Any())
+                    {
+                        dbContext.Database.Migrate();
+                        MessageBox.Show($"Eksik migration'lar uygulandı:\n- {string.Join("\n- ", pendingMigrations)}",
+                            "Bilgilendirme", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Veritabanı zaten güncel, uygulamak için bekleyen migration yok.",
+                            "Bilgilendirme", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Veritabanı oluşturulurken veya migrate edilirken bir hata oluştu: {ex.Message}",
+                    "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Shutdown();
+            }
         }
 
     }

@@ -15,24 +15,23 @@ namespace WorkTracking.DAL.Repositories
             _context = context;
         }
 
-        public async Task<User> GetUserByUsernameAndPasswordAsync(string username, string password)
-        {
-            return await _context.Users
-                .Where(u => u.UserName == username && u.Password == password)
-                .FirstOrDefaultAsync();
-        }
         public async Task<User> GetUserByCredentialsAsync(string username, string password)
         {
             return await _context.Users
                 .FirstOrDefaultAsync(u => u.UserName == username && u.Password == password);
         }
 
-        public User GetLoggedInUser()
+        public async Task<User> GetUserByUserNameAsync(string username)
         {
-            var userId = 1;
-
-            return _context.Users.FirstOrDefault(u => u.UserId == userId);
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
         }
+
+        public async Task AddAsync(User user)
+        {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task UpdateAsync(User user)
         {
             var existingUser = await _context.Users.FindAsync(user.UserId);
@@ -49,10 +48,7 @@ namespace WorkTracking.DAL.Repositories
                 await _context.SaveChangesAsync();
             }
         }
-        public User GetLoggedInUser(int userId)
-        {
-            return _context.Users.FirstOrDefault(u => u.UserId == userId);
-        }
+
         public async Task DeleteAsync(int userId)
         {
             var userToDelete = await _context.Users.FindAsync(userId);
@@ -68,5 +64,15 @@ namespace WorkTracking.DAL.Repositories
             }
         }
 
+        public User GetLoggedInUser()
+        {
+            var userId = 1; // Örnek kullanıcı ID
+            return _context.Users.FirstOrDefault(u => u.UserId == userId);
+        }
+
+        public User GetLoggedInUser(int userId)
+        {
+            return _context.Users.FirstOrDefault(u => u.UserId == userId);
+        }
     }
 }

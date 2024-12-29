@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Input;
 using Microsoft.EntityFrameworkCore;
 using WorkTracking.DAL.Data;
 
@@ -12,29 +13,28 @@ namespace WorkTrackingWpf
         public AdminPanel()
         {
             InitializeComponent();
-            _context = new AppDbContext(new DbContextOptions<AppDbContext>()); // You should pass the proper options for AppDbContext
+            _context = new AppDbContext(new DbContextOptions<AppDbContext>());
         }
 
-        // Kullanıcı Ekle Linki Tıklandığında
         private void AddUserLink_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // Kullanıcı ekleme sayfasını ContentArea içine yükleme
-            ContentArea.Content = new AddUserPage(); // CreateUser sayfasını göstereceğiz.
+            ContentArea.Content = new AddUserPage(); 
         }
 
-        // Firma Ekle Linki Tıklandığında
         private void CreateCompanyLink_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // Firma ekleme sayfasını ContentArea içine yükleme
-            ContentArea.Content = new CreateCompaniesPage(); // CreateCompany sayfasını göstereceğiz.
+            ContentArea.Content = new CreateCompaniesPage();
         }
-
         private void CreateProjectLink_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // Pass _context to CreateProject constructor
             CreateProject createProjectPage = new CreateProject(_context);
 
             ContentArea.Content = createProjectPage;
+        }
+        private void ViewReportsLink_Click(object sender, MouseButtonEventArgs e)
+        {
+            AdminUserReport adminReportsLog = new AdminUserReport(_context);
+            adminReportsLog.Show();
         }
     }
 }

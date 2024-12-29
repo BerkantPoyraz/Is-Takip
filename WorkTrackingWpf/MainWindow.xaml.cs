@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using WorkTracking.DAL.Repositories;
 using WorkTracking.Model.Model;
+using System.Security.Cryptography;
 
 namespace WorkTrackingWpf
 {
@@ -15,13 +18,32 @@ namespace WorkTrackingWpf
         {
             InitializeComponent();
             _userRepository = App.ServiceProvider.GetRequiredService<IUserRepository>();
+            SeedAdminUser();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
         }
+        private async Task SeedAdminUser()
+        {
+            var adminUser = await _userRepository.GetUserByUserNameAsync("Admin");
+            if (adminUser == null)
+            {
+                var newAdmin = new User
+                {
+                    UserName = "Admin",
+                    FirstName = "Admin",
+                    LastName = "Admin",
+                    Password = "Admin_123456+", 
+                    Role = UserRole.Admin,
+                    Salary = 0,
+                    HireDate = DateTime.Now
+                };
 
+                await _userRepository.AddAsync(newAdmin);
+            }
+        }
         private async void LoginButton_Click_1(object sender, RoutedEventArgs e)
         {
             string username = UserNameTextBox.Text;
@@ -33,7 +55,6 @@ namespace WorkTrackingWpf
                 return;
             }
 
-            // Kullanıcı doğrulama
             var user = await _userRepository.GetUserByCredentialsAsync(username, password);
 
             if (user != null)
@@ -41,10 +62,9 @@ namespace WorkTrackingWpf
                 var projectRepository = App.ServiceProvider.GetRequiredService<IProjectRepository>();
                 var userRepository = App.ServiceProvider.GetRequiredService<IUserRepository>();
 
-                // loggedInUser'ı doğru şekilde geçiriyoruz
                 ProjectSelectionPage projectPage = new ProjectSelectionPage(projectRepository, userRepository, user);
                 projectPage.Show();
-                this.Close(); // MainWindow'ı kapatıyoruz
+                this.Close();
             }
             else
             {

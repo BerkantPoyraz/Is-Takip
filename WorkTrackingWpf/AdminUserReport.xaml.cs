@@ -12,17 +12,17 @@ using WorkTracking.Model.Model;
 
 namespace WorkTrackingWpf
 {
-    public partial class ReportsLog : Window
+    public partial class AdminUserReport : Window
     {
         private readonly AppDbContext _context;
 
-        public ReportsLog(AppDbContext context)
+        public AdminUserReport(AppDbContext context)
         {
             _context = context;
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             for (int i = DateTime.Now.Year - 10; i <= DateTime.Now.Year + 10; i++)
             {
@@ -35,23 +35,36 @@ namespace WorkTrackingWpf
                 MonthComboBox.Items.Add(i);
             }
             MonthComboBox.SelectedItem = DateTime.Now.Month;
+
+            var users = await _context.Users.ToListAsync();
+            UserComboBox.ItemsSource = users;
+            UserComboBox.DisplayMemberPath = "UserName";
+            UserComboBox.SelectedValuePath = "UserId";
         }
 
         private async void FilterButton_Click(object sender, RoutedEventArgs e)
         {
             if (YearComboBox.SelectedItem != null && MonthComboBox.SelectedItem != null)
             {
-                int selectedYear = (int)YearComboBox.SelectedItem;
-                int selectedMonth = (int)MonthComboBox.SelectedItem;
+                if (UserComboBox.SelectedValue != null)
+                {
+                    int selectedYear = (int)YearComboBox.SelectedItem;
+                    int selectedMonth = (int)MonthComboBox.SelectedItem;
+                    int selectedUserId = (int)UserComboBox.SelectedValue;
 
-                await LoadUserReportsAsync(selectedYear, selectedMonth);
+                    await LoadUserReportsAsync(selectedYear, selectedMonth, selectedUserId);
+                }
+                else
+                {
+                    MessageBox.Show("Lütfen bir kullanıcı seçiniz.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
             else
             {
-                MessageBox.Show("Lütfen yıl ve ay seçiniz.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Lütfen yıl, ay ve kullanıcı seçiniz.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        private async Task LoadUserReportsAsync(int year, int month)
+        private async Task LoadUserReportsAsync(int year, int month, int userId)
         {
             try
             {
@@ -60,7 +73,7 @@ namespace WorkTrackingWpf
                                             .ToList();
 
                 var userReports = await _context.UserReports
-                    .Where(r => r.ReportDate.Year == year && r.ReportDate.Month == month)
+                    .Where(r => r.ReportDate.Year == year && r.ReportDate.Month == month && r.UserId == userId)
                     .ToListAsync();
 
                 double totalMissingTime = 0;
@@ -100,8 +113,6 @@ namespace WorkTrackingWpf
                             var expectedLunchStart = new DateTime(report.ReportDate.Year, report.ReportDate.Month, report.ReportDate.Day, 13, 0, 0);
                             var expectedLunchEnd = new DateTime(report.ReportDate.Year, report.ReportDate.Month, report.ReportDate.Day, 14, 0, 0);
                             var expectedWorkEnd = new DateTime(report.ReportDate.Year, report.ReportDate.Month, report.ReportDate.Day, 18, 0, 0);
-
-                            var totalExpectedMinutes = (expectedWorkEnd - expectedWorkStart).TotalMinutes - (expectedLunchEnd - expectedLunchStart).TotalMinutes;
 
                             if (report.WorkStart.HasValue && workStart > expectedWorkStart)
                             {
@@ -202,7 +213,6 @@ namespace WorkTrackingWpf
             int minutes = (int)(totalMinutes % 60);
             return $"{hours:D2}:{minutes:D2}";
         }
-
         private void MonthComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
@@ -212,16 +222,17 @@ namespace WorkTrackingWpf
         {
 
         }
-
         private void DataGrid_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            e.Handled = true; 
+            e.Handled = true;
         }
-
         private void DataGrid_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
         }
+        private void UserComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
 
+        }
     }
 }

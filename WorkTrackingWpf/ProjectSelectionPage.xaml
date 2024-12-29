@@ -13,24 +13,34 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="10" ShadowDepth="0" Color="Black" Opacity="0.5"/>
             </Border.Effect>
-            <StackPanel Margin="20">
-                <TextBlock Text="Proje Seçimi" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" TextAlignment="Center" Margin="0,0,0,20"/>
-                <Label Content="Proje Seçin:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="#2C3E50"/>
-                <ComboBox x:Name="ProjectsComboBox" Width="400" Height="30" Margin="0,0,0,15" 
-                          Background="#ECF0F1" BorderBrush="#2C3E50" DisplayMemberPath="DisplayName" SelectedValuePath="ProjectId"/>
-                <Label Content="Yapılacak İş Seçin:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="#2C3E50"/>
-                <ComboBox x:Name="ProjectTasksComboBox" Width="400" Height="30" Margin="0,0,0,15" 
-                          Background="#ECF0F1" BorderBrush="#2C3E50" DisplayMemberPath="TaskName" SelectedValuePath="ProjectTaskId"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                    <Button Content="Çalışmaya Başla" Width="150" Height="40" Background="#4CA1AF" Foreground="White" FontWeight="Bold" Margin="5,0" Click="WorkStart"/>
-                    <Button Content="Çalışmayı Sonlandır" Width="150" Height="40" Background="#E74C3C" Foreground="White" FontWeight="Bold" Margin="5,0" Click="WorkEnd"/>
-                    <Button Content="Çalışma Onayla" Width="150" Height="40" Background="#2ECC71" Foreground="White" FontWeight="Bold" Margin="5,0" Click="WorkConfirm"/>
+
+            <!-- ScrollViewer Eklendi -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="20">
+                <StackPanel>
+                    <TextBlock Text="Proje Seçimi" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" TextAlignment="Center" Margin="0,0,0,20"/>
+                    <Label Content="Proje Seçin:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="#2C3E50"/>
+                    <!-- Proje Seçimi için ComboBox -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="30" Margin="0,0,0,15">
+                        <ComboBox x:Name="ProjectsComboBox" Width="400" Height="30" Background="#ECF0F1" BorderBrush="#2C3E50" DisplayMemberPath="DisplayName" SelectedValuePath="ProjectId"/>
+                    </ScrollViewer>
+
+                    <Label Content="Yapılacak İş Seçin:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="#2C3E50"/>
+                    <!-- Yapılacak İş Seçimi için ComboBox -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="30" Margin="0,0,0,15">
+                        <ComboBox x:Name="ProjectTasksComboBox" Width="400" Height="30" Background="#ECF0F1" BorderBrush="#2C3E50" DisplayMemberPath="TaskName" SelectedValuePath="ProjectTaskId"/>
+                    </ScrollViewer>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                        <Button Content="Çalışmaya Başla" Width="150" Height="40" Background="#4CA1AF" Foreground="White" FontWeight="Bold" Margin="5,0" Click="WorkStart"/>
+                        <Button Content="Çalışmayı Sonlandır" Width="150" Height="40" Background="#E74C3C" Foreground="White" FontWeight="Bold" Margin="5,0" Click="WorkEnd"/>
+                        <Button Content="Rapor Onay" Width="150" Height="40" Background="#2ECC71" Foreground="White" FontWeight="Bold" Margin="5,0" Click="WorkConfirm"/>
+                    </StackPanel>
+                    <!-- Admin Panel Butonu -->
+                    <Button x:Name="AdminPanelButton" Content="Yönetici Paneli" 
+                            Width="150" Height="40" Background="#3498DB" Foreground="White" FontWeight="Bold" 
+                            Margin="5,20,5,0" Visibility="Collapsed" Click="AdminPanelButton_Click"/>
                 </StackPanel>
-                <!-- Admin Panel Butonu -->
-                <Button x:Name="AdminPanelButton" Content="Yönetici Paneli" 
-                        Width="150" Height="40" Background="#3498DB" Foreground="White" FontWeight="Bold" 
-                        Margin="5,20,5,0" Visibility="Collapsed" Click="AdminPanelButton_Click"/>
-            </StackPanel>
+            </ScrollViewer>
         </Border>
     </Grid>
 </Window>

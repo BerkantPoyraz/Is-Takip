@@ -6,6 +6,11 @@
         USD = 1,
         EUR = 2
     }
+    public enum ProjectStatus
+    {
+        Pasif = 0,
+        Aktif = 1
+    }
     public class Project
     {
         public int ProjectId { get; set; }
@@ -19,6 +24,7 @@
         public decimal UnitAmount { get; set; }
         public decimal TotalAmount { get; set; }
         public ContractCurrency ContractCurrency { get; set; }
+        public ProjectStatus ProjectStatus { get; set; }
 
         public ContractType ContractType { get; set; }
 
