@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkTracking.Model", "WorkT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkTracking.DAL", "WorkTracking.DAL\WorkTracking.DAL.csproj", "{70BC183F-10E2-417F-96DA-ECE4FB77FFF9}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Is Takip", "Is Takip\Is Takip.vdproj", "{8F7F58BD-64FD-4409-8A0A-4D8C6D6BD955}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,8 @@ Global
 		{70BC183F-10E2-417F-96DA-ECE4FB77FFF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70BC183F-10E2-417F-96DA-ECE4FB77FFF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70BC183F-10E2-417F-96DA-ECE4FB77FFF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F7F58BD-64FD-4409-8A0A-4D8C6D6BD955}.Debug|Any CPU.ActiveCfg = Debug
+		{8F7F58BD-64FD-4409-8A0A-4D8C6D6BD955}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

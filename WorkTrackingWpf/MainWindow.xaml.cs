@@ -35,7 +35,7 @@ namespace WorkTrackingWpf
                     UserName = "Admin",
                     FirstName = "Admin",
                     LastName = "Admin",
-                    Password = "Admin_123456+", 
+                    Password = "Admin123+", 
                     Role = UserRole.Admin,
                     Salary = 0,
                     HireDate = DateTime.Now

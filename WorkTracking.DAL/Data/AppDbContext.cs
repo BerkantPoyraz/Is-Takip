@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using WorkTracking.Model.Model;
 
@@ -22,10 +23,22 @@ namespace WorkTracking.DAL.Data
                     .Build();
 
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+                try
+                {
+                    using (var connection = new SqlConnection(connectionString))
+                    {
+                        connection.Open();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Veritabanına bağlanılamadı. Lütfen bağlantı ayarlarını kontrol edin.", ex);
+                }
+
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Company>()

@@ -161,18 +161,18 @@ namespace WorkTrackingWpf
                     await UpdateLunchStartTime(currentTime);
                 }
 
-                if (currentTime.Hour == 16 && currentTime.Minute == 45 && currentTime.Second == 0)
+                if (currentTime.Hour == 18 && currentTime.Minute == 0 && currentTime.Second == 0)
                 {
                     BringWindowToFront();
                     await UpdateWorkEndTime(currentTime);
                 }
 
-                if (currentTime.Hour == 17 && currentTime.Minute == 01 && currentTime.Second == 0)
-                {
-                    BringWindowToFront();
-                    await UpdateLunchStartTime(currentTime);
-                    MessageBox.Show("Saat 23:30 oldu. İlgili işlemler yapılabilir.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                //if (currentTime.Hour == 17 && currentTime.Minute == 01 && currentTime.Second == 0)
+                //{
+                //    BringWindowToFront();
+                //    await UpdateLunchStartTime(currentTime);
+                //    MessageBox.Show("Saat 23:30 oldu. İlgili işlemler yapılabilir.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                //}
             };
             _timeCheckTimer.Start();
         }
@@ -277,7 +277,7 @@ namespace WorkTrackingWpf
 
                     await dbContext.SaveChangesAsync();
 
-                    MessageBox.Show($"Çalışma {currentTime} itibariyle başlatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                   // MessageBox.Show($"Çalışma {currentTime} itibariyle başlatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     this.WindowState = WindowState.Minimized;
                 }
@@ -304,7 +304,7 @@ namespace WorkTrackingWpf
 
                             await dbContext.SaveChangesAsync();
 
-                            MessageBox.Show($"Moladan dönüş saati {currentTime} olarak kaydedildi.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                           // MessageBox.Show($"Moladan dönüş saati {currentTime} olarak kaydedildi.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
                         }
                     }
 
@@ -317,7 +317,7 @@ namespace WorkTrackingWpf
                     dbContext.WorkLog.Add(newWorkLog);
                     await dbContext.SaveChangesAsync();
 
-                    MessageBox.Show($"Çalışma {currentTime} tarihinde başlatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                   // MessageBox.Show($"Çalışma {currentTime} tarihinde başlatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
@@ -347,11 +347,11 @@ namespace WorkTrackingWpf
                         }
 
                         await dbContext.SaveChangesAsync();
-                        MessageBox.Show($"Öğlen molası {currentTime} saatinde başlatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                      //  MessageBox.Show($"Öğlen molası {currentTime} saatinde başlatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
-                        MessageBox.Show("Zaten bir mola başlatılmış.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                       // MessageBox.Show("Zaten bir mola başlatılmış.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
                 catch (Exception ex)
@@ -378,11 +378,11 @@ namespace WorkTrackingWpf
 
                             await dbContext.SaveChangesAsync();
 
-                            MessageBox.Show($"Moladan dönüş saati {currentTime} olarak kaydedildi.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                           // MessageBox.Show($"Moladan dönüş saati {currentTime} olarak kaydedildi.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
                         }
                         else if (userReport.LunchEnd != null)
                         {
-                            MessageBox.Show("Mola bitiş saati zaten kaydedilmiş.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                           // MessageBox.Show("Mola bitiş saati zaten kaydedilmiş.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
                         }
                     }
                     else
@@ -443,7 +443,7 @@ namespace WorkTrackingWpf
 
                     await dbContext.SaveChangesAsync();
 
-                    MessageBox.Show("Çalışma günü sona erdi ve aktif log kapatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                   // MessageBox.Show("Çalışma günü sona erdi ve aktif log kapatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     Application.Current.Shutdown();
                 }
