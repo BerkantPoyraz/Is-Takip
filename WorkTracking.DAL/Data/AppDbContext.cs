@@ -106,7 +106,6 @@ namespace WorkTracking.DAL.Data
             base.OnModelCreating(modelBuilder);
         }
 
-
         public DbSet<User> Users { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Company> Companies { get; set; }
@@ -116,6 +115,5 @@ namespace WorkTracking.DAL.Data
         public DbSet<NewTask> Tasks { get; set; }
         public DbSet<TaskWithSelection> TaskWithSelections { get; set; }
         public DbSet<UserReports> UserReports { get; set; }
-        public object WorkLogs { get; set; }
     }
 }

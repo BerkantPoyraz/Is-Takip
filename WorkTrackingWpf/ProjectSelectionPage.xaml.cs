@@ -34,8 +34,9 @@ namespace WorkTrackingWpf
 
             LoadProjectsAsync();
             StartTimeCheckTimer();
-        }
 
+            this.Topmost = true;
+        }
         private async void LoadProjectsAsync()
         {
             try
@@ -132,10 +133,37 @@ namespace WorkTrackingWpf
 
         private void AdminPanelButton_Click(object sender, RoutedEventArgs e)
         {
-            AdminPanel adminPanel = new AdminPanel();
+            var activeWindow = Application.Current.MainWindow;
+            if (activeWindow != null)
+            {
+                activeWindow.WindowState = WindowState.Minimized;
+            }
+            var projectSelectionWindow = Application.Current.Windows
+                .OfType<Window>()
+                .FirstOrDefault(w => w.Content is ProjectSelectionPage);
+            if (projectSelectionWindow != null)
+            {
+                projectSelectionWindow.WindowState = WindowState.Minimized;
+            }
+            var adminPanel = new AdminPanel
+            {
+                Topmost = true
+            };
             adminPanel.Show();
-        }
 
+            adminPanel.Closed += (s, args) =>
+            {
+                if (activeWindow != null)
+                {
+                    activeWindow.WindowState = WindowState.Normal;
+                }
+
+                if (projectSelectionWindow != null)
+                {
+                    projectSelectionWindow.WindowState = WindowState.Normal;
+                }
+            };
+        }
         private User GetLoggedInUser()
         {
             return _loggedInUser;
@@ -145,7 +173,8 @@ namespace WorkTrackingWpf
             this.WindowState = WindowState.Normal;
             this.Activate();
             this.Topmost = true;
-            this.Topmost = false;
+            this.Topmost = true;
+            this.Topmost = true;
         }
         private void StartTimeCheckTimer()
         {
@@ -155,7 +184,7 @@ namespace WorkTrackingWpf
             {
                 DateTime currentTime = DateTime.Now;
 
-                if (currentTime.Hour == 13 && currentTime.Minute == 0 && currentTime.Second == 0)
+                if (currentTime.Hour == 14 && currentTime.Minute == 56 && currentTime.Second == 0)
                 {
                     BringWindowToFront();
                     await UpdateLunchStartTime(currentTime);
@@ -166,13 +195,6 @@ namespace WorkTrackingWpf
                     BringWindowToFront();
                     await UpdateWorkEndTime(currentTime);
                 }
-
-                //if (currentTime.Hour == 17 && currentTime.Minute == 01 && currentTime.Second == 0)
-                //{
-                //    BringWindowToFront();
-                //    await UpdateLunchStartTime(currentTime);
-                //    MessageBox.Show("Saat 23:30 oldu. İlgili işlemler yapılabilir.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
-                //}
             };
             _timeCheckTimer.Start();
         }
@@ -199,6 +221,134 @@ namespace WorkTrackingWpf
                     MessageBox.Show($"WorkEnd hatası: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private async Task HandleWorkStart(DateTime currentTime)
+        {
+            using (var dbContext = App.ServiceProvider.GetRequiredService<AppDbContext>())
+            {
+                try
+                {
+                    var userReport = await dbContext.UserReports
+                        .FirstOrDefaultAsync(ur => ur.UserId == _loggedInUser.UserId && ur.ReportDate.Date == currentTime.Date);
+
+                    if (userReport != null)
+                    {
+                        if (userReport.LunchStart != null && userReport.LunchEnd == null)
+                        {
+                            userReport.LunchEnd = currentTime;
+
+                            await dbContext.SaveChangesAsync();
+
+                            // MessageBox.Show($"Moladan dönüş saati {currentTime} olarak kaydedildi.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                    }
+
+                    var newWorkLog = new WorkLog
+                    {
+                        UserId = _loggedInUser.UserId,
+                        StartTime = currentTime
+                    };
+
+                    dbContext.WorkLog.Add(newWorkLog);
+                    await dbContext.SaveChangesAsync();
+
+                    // MessageBox.Show($"Çalışma {currentTime} tarihinde başlatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"WorkStart hatası: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+        private async Task UpdateLunchStartTime(DateTime currentTime)
+        {
+            using (var dbContext = App.ServiceProvider.GetRequiredService<AppDbContext>())
+            {
+                try
+                {
+                    var userReport = await dbContext.UserReports
+                        .FirstOrDefaultAsync(ur => ur.UserId == _loggedInUser.UserId && ur.ReportDate.Date == currentTime.Date);
+
+                    if (userReport != null && userReport.LunchStart == null)
+                    {
+                        userReport.LunchStart = currentTime;
+
+                        var activeWorkLog = await dbContext.WorkLog
+                            .FirstOrDefaultAsync(wl => wl.UserId == _loggedInUser.UserId && wl.EndTime == null);
+
+                        if (activeWorkLog != null)
+                        {
+                            activeWorkLog.EndTime = currentTime;
+                        }
+
+                        await dbContext.SaveChangesAsync();
+                        //  MessageBox.Show($"Öğlen molası {currentTime} saatinde başlatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        // MessageBox.Show("Zaten bir mola başlatılmış.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"LunchStart hatası: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+        private async Task UpdateLunchEndTime(DateTime currentTime)
+        {
+            using (var dbContext = App.ServiceProvider.GetRequiredService<AppDbContext>())
+            {
+                try
+                {
+                    var userReport = await dbContext.UserReports
+                        .FirstOrDefaultAsync(ur => ur.UserId == _loggedInUser.UserId && ur.ReportDate.Date == currentTime.Date);
+
+                    if (userReport != null)
+                    {
+                        if (userReport.LunchStart != null && userReport.LunchEnd == null)
+                        {
+                            userReport.LunchEnd = currentTime;
+
+                            await dbContext.SaveChangesAsync();
+
+                            // MessageBox.Show($"Moladan dönüş saati {currentTime} olarak kaydedildi.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                        else if (userReport.LunchEnd != null)
+                        {
+                            // MessageBox.Show("Mola bitiş saati zaten kaydedilmiş.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Bu gün için herhangi bir kullanıcı raporu bulunamadı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"LunchEnd hatası: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void WorkConfirm(object sender, RoutedEventArgs e)
+        {
+            var activeWindow = Application.Current.MainWindow;
+            if (activeWindow != null)
+            {
+                activeWindow.WindowState = WindowState.Minimized;
+            }
+
+            var projectSelectionWindow = Application.Current.Windows.OfType<ProjectSelectionPage>().FirstOrDefault();
+            if (projectSelectionWindow != null)
+            {
+                projectSelectionWindow.WindowState = WindowState.Minimized;
+            }
+
+            var reportsLogWindow = new ReportsLog(App.ServiceProvider.GetRequiredService<AppDbContext>());
+            reportsLogWindow.Topmost = true;
+            reportsLogWindow.Show();
         }
         private async void WorkStart(object sender, RoutedEventArgs e)
         {
@@ -231,6 +381,9 @@ namespace WorkTrackingWpf
             {
                 try
                 {
+                    
+                    await UpdateIdleTime(currentTime);
+
                     var activeWorkLog = await dbContext.WorkLog
                         .Where(wl => wl.UserId == user.UserId && wl.EndTime == null)
                         .OrderByDescending(wl => wl.StartTime)
@@ -261,6 +414,7 @@ namespace WorkTrackingWpf
                             WorkEnd = null,
                             LunchStart = null,
                             LunchEnd = null,
+                            IdleTime = TimeSpan.Zero,
                             Status = Status.Seçiniz
                         };
                         dbContext.UserReports.Add(userReport);
@@ -277,122 +431,11 @@ namespace WorkTrackingWpf
 
                     await dbContext.SaveChangesAsync();
 
-                   // MessageBox.Show($"Çalışma {currentTime} itibariyle başlatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
-
                     this.WindowState = WindowState.Minimized;
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Çalışma başlatma hatası: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-        private async Task HandleWorkStart(DateTime currentTime)
-        {
-            using (var dbContext = App.ServiceProvider.GetRequiredService<AppDbContext>())
-            {
-                try
-                {
-                    var userReport = await dbContext.UserReports
-                        .FirstOrDefaultAsync(ur => ur.UserId == _loggedInUser.UserId && ur.ReportDate.Date == currentTime.Date);
-
-                    if (userReport != null)
-                    {
-                        if (userReport.LunchStart != null && userReport.LunchEnd == null)
-                        {
-                            userReport.LunchEnd = currentTime;
-
-                            await dbContext.SaveChangesAsync();
-
-                           // MessageBox.Show($"Moladan dönüş saati {currentTime} olarak kaydedildi.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                    }
-
-                    var newWorkLog = new WorkLog
-                    {
-                        UserId = _loggedInUser.UserId,
-                        StartTime = currentTime
-                    };
-
-                    dbContext.WorkLog.Add(newWorkLog);
-                    await dbContext.SaveChangesAsync();
-
-                   // MessageBox.Show($"Çalışma {currentTime} tarihinde başlatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"WorkStart hatası: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-        private async Task UpdateLunchStartTime(DateTime currentTime)
-        {
-            using (var dbContext = App.ServiceProvider.GetRequiredService<AppDbContext>())
-            {
-                try
-                {
-                    var userReport = await dbContext.UserReports
-                        .FirstOrDefaultAsync(ur => ur.UserId == _loggedInUser.UserId && ur.ReportDate.Date == currentTime.Date);
-
-                    if (userReport != null && userReport.LunchStart == null)
-                    {
-                        userReport.LunchStart = currentTime;
-
-                        var activeWorkLog = await dbContext.WorkLog
-                            .FirstOrDefaultAsync(wl => wl.UserId == _loggedInUser.UserId && wl.EndTime == null);
-
-                        if (activeWorkLog != null)
-                        {
-                            activeWorkLog.EndTime = currentTime;
-                        }
-
-                        await dbContext.SaveChangesAsync();
-                      //  MessageBox.Show($"Öğlen molası {currentTime} saatinde başlatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    else
-                    {
-                       // MessageBox.Show("Zaten bir mola başlatılmış.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"LunchStart hatası: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
-        private async Task UpdateLunchEndTime(DateTime currentTime)
-        {
-            using (var dbContext = App.ServiceProvider.GetRequiredService<AppDbContext>())
-            {
-                try
-                {
-                    var userReport = await dbContext.UserReports
-                        .FirstOrDefaultAsync(ur => ur.UserId == _loggedInUser.UserId && ur.ReportDate.Date == currentTime.Date);
-
-                    if (userReport != null)
-                    {
-                        if (userReport.LunchStart != null && userReport.LunchEnd == null)
-                        {
-                            userReport.LunchEnd = currentTime;
-
-                            await dbContext.SaveChangesAsync();
-
-                           // MessageBox.Show($"Moladan dönüş saati {currentTime} olarak kaydedildi.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                        else if (userReport.LunchEnd != null)
-                        {
-                           // MessageBox.Show("Mola bitiş saati zaten kaydedilmiş.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Bu gün için herhangi bir kullanıcı raporu bulunamadı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"LunchEnd hatası: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -432,7 +475,8 @@ namespace WorkTrackingWpf
                             UserId = user.UserId,
                             ReportDate = currentTime.Date,
                             WorkStart = activeWorkLog?.StartTime ?? currentTime,
-                            WorkEnd = currentTime
+                            WorkEnd = currentTime,
+                            IdleTime = TimeSpan.Zero
                         };
                         await dbContext.UserReports.AddAsync(userReport);
                     }
@@ -443,8 +487,6 @@ namespace WorkTrackingWpf
 
                     await dbContext.SaveChangesAsync();
 
-                   // MessageBox.Show("Çalışma günü sona erdi ve aktif log kapatıldı.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
-
                     Application.Current.Shutdown();
                 }
                 catch (Exception ex)
@@ -453,10 +495,53 @@ namespace WorkTrackingWpf
                 }
             }
         }
-        private void WorkConfirm(object sender, RoutedEventArgs e)
+        private async Task UpdateIdleTime(DateTime currentTime)
         {
-            var reportsLogWindow = new ReportsLog(App.ServiceProvider.GetRequiredService<AppDbContext>());
-            reportsLogWindow.Show();
+            using (var dbContext = App.ServiceProvider.GetRequiredService<AppDbContext>())
+            {
+                try
+                {
+                    var activeWorkLog = await dbContext.WorkLog
+                        .Where(wl => wl.UserId == _loggedInUser.UserId && wl.EndTime != null)
+                        .OrderByDescending(wl => wl.EndTime)
+                        .FirstOrDefaultAsync();
+
+                    if (activeWorkLog != null)
+                    {
+                        var lastExitTime = activeWorkLog.EndTime.Value;
+                        var idleTime = currentTime - lastExitTime;
+
+                        var userReport = await dbContext.UserReports
+                            .FirstOrDefaultAsync(ur => ur.UserId == _loggedInUser.UserId && ur.ReportDate.Date == currentTime.Date);
+
+                        if (userReport != null)
+                        {
+                            if (userReport.IdleTime.HasValue)
+                                userReport.IdleTime += idleTime;
+                            else
+                                userReport.IdleTime = idleTime;
+                        }
+                        else
+                        {
+                            userReport = new UserReports
+                            {
+                                UserId = _loggedInUser.UserId,
+                                ReportDate = currentTime.Date,
+                                IdleTime = idleTime,
+                                WorkStart = activeWorkLog?.StartTime ?? currentTime,
+                            };
+                            dbContext.UserReports.Add(userReport);
+                        }
+
+                        await dbContext.SaveChangesAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                   // MessageBox.Show($"IdleTime hesaplama hatası: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+
         }
     }
 }

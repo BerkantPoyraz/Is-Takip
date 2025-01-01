@@ -20,6 +20,7 @@ namespace WorkTrackingWpf
         {
             _context = context;
             InitializeComponent();
+            this.Topmost = true;
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -38,7 +39,6 @@ namespace WorkTrackingWpf
 
             var users = await _context.Users.ToListAsync();
             UserComboBox.ItemsSource = users;
-            UserComboBox.DisplayMemberPath = "UserName";
             UserComboBox.SelectedValuePath = "UserId";
         }
 
@@ -64,96 +64,87 @@ namespace WorkTrackingWpf
                 MessageBox.Show("Lütfen yıl, ay ve kullanıcı seçiniz.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-        private async Task LoadUserReportsAsync(int year, int month, int userId)
+
+        private async Task LoadUserReportsAsync(int year, int month, int selectedUserId)
         {
             try
             {
+                if (App.CurrentUser == null)
+                {
+                    MessageBox.Show("Giriş yapılmadı.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
                 var daysInMonth = Enumerable.Range(1, DateTime.DaysInMonth(year, month))
-                                            .Select(day => new DateTime(year, month, day))
-                                            .ToList();
+                                             .Select(day => new DateTime(year, month, day))
+                                             .ToList();
 
                 var userReports = await _context.UserReports
-                    .Where(r => r.ReportDate.Year == year && r.ReportDate.Month == month && r.UserId == userId)
-                    .ToListAsync();
+                     .Where(r => r.UserId == selectedUserId && r.ReportDate.Year == year && r.ReportDate.Month == month)
+                     .ToListAsync();
 
                 double totalMissingTime = 0;
                 double totalOvertime = 0;
 
                 var groupedReports = userReports
-                    .Select(report =>
-                    {
-                        double missingTime = 0;
-                        double overtime = 0;
+                     .Select(report =>
+                     {
+                         double missingTime = 0;
+                         double overtime = 0;
 
-                        var workStart = report.WorkStart ?? DateTime.MinValue;
-                        var workEnd = report.WorkEnd ?? DateTime.MinValue;
-                        var lunchStart = report.LunchStart ?? DateTime.MinValue;
-                        var lunchEnd = report.LunchEnd ?? DateTime.MinValue;
+                         var workStart = report.WorkStart ?? DateTime.MinValue;
+                         var workEnd = report.WorkEnd ?? DateTime.MinValue;
+                         var lunchStart = report.LunchStart ?? DateTime.MinValue;
+                         var lunchEnd = report.LunchEnd ?? DateTime.MinValue;
 
-                        double workDurationInMinutes = 0;
-                        if (report.WorkStart.HasValue && report.WorkEnd.HasValue)
-                        {
-                            workDurationInMinutes = (workEnd - workStart).TotalMinutes;
-                            if (report.LunchStart.HasValue && report.LunchEnd.HasValue)
-                            {
-                                workDurationInMinutes -= (lunchEnd - lunchStart).TotalMinutes;
-                            }
-                        }
+                         double workDurationInMinutes = 0;
+                         if (report.WorkStart.HasValue && report.WorkEnd.HasValue)
+                         {
+                             workDurationInMinutes = (workEnd - workStart).TotalMinutes;
+                             if (report.LunchStart.HasValue && report.LunchEnd.HasValue)
+                             {
+                                 workDurationInMinutes -= (lunchEnd - lunchStart).TotalMinutes;
+                             }
+                         }
 
-                        bool isWeekend = report.ReportDate.DayOfWeek == DayOfWeek.Saturday || report.ReportDate.DayOfWeek == DayOfWeek.Sunday;
+                         var idleTime = report.IdleTime ?? TimeSpan.Zero;
+                         workDurationInMinutes -= idleTime.TotalMinutes;
 
-                        if (isWeekend)
-                        {
-                            overtime += workDurationInMinutes;
-                            missingTime = 0;
-                        }
-                        else
-                        {
-                            var expectedWorkStart = new DateTime(report.ReportDate.Year, report.ReportDate.Month, report.ReportDate.Day, 8, 0, 0);
-                            var expectedLunchStart = new DateTime(report.ReportDate.Year, report.ReportDate.Month, report.ReportDate.Day, 13, 0, 0);
-                            var expectedLunchEnd = new DateTime(report.ReportDate.Year, report.ReportDate.Month, report.ReportDate.Day, 14, 0, 0);
-                            var expectedWorkEnd = new DateTime(report.ReportDate.Year, report.ReportDate.Month, report.ReportDate.Day, 18, 0, 0);
+                         bool isWeekend = report.ReportDate.DayOfWeek == DayOfWeek.Saturday || report.ReportDate.DayOfWeek == DayOfWeek.Sunday;
 
-                            if (report.WorkStart.HasValue && workStart > expectedWorkStart)
-                            {
-                                missingTime += (workStart - expectedWorkStart).TotalMinutes;
-                            }
+                         const double expectedDailyWorkMinutes = 9 * 60;
 
-                            if (report.LunchStart.HasValue && report.LunchStart < expectedLunchStart)
-                            {
-                                missingTime += (expectedLunchStart - lunchStart).TotalMinutes;
-                            }
-                            if (report.LunchEnd.HasValue && report.LunchEnd > expectedLunchEnd)
-                            {
-                                missingTime += (lunchEnd - expectedLunchEnd).TotalMinutes;
-                            }
+                         if (isWeekend)
+                         {
+                             overtime += workDurationInMinutes;
+                         }
+                         else
+                         {
+                             if (workDurationInMinutes < expectedDailyWorkMinutes)
+                             {
+                                 missingTime = expectedDailyWorkMinutes - workDurationInMinutes;
+                             }
+                             else
+                             {
+                                 overtime = workDurationInMinutes - expectedDailyWorkMinutes;
+                             }
+                         }
 
-                            if (report.WorkEnd.HasValue && workEnd > expectedWorkEnd)
-                            {
-                                overtime = (workEnd - expectedWorkEnd).TotalMinutes;
-                            }
+                         totalMissingTime += missingTime;
+                         totalOvertime += overtime;
 
-                            if (workEnd < expectedWorkEnd)
-                            {
-                                missingTime += (expectedWorkEnd - workEnd).TotalMinutes;
-                            }
-                        }
-
-                        totalMissingTime += missingTime;
-                        totalOvertime += overtime;
-
-                        return new
-                        {
-                            WorkDate = report.ReportDate.ToString("dd.MM.yyyy dddd", new CultureInfo("tr-TR")),
-                            WorkStartTime = report.WorkStart?.ToString("HH:mm") ?? "00:00",
-                            EndTime = report.WorkEnd?.ToString("HH:mm") ?? "00:00",
-                            LunchStartTime = report.LunchStart?.ToString("HH:mm") ?? "00:00",
-                            LunchEndTime = report.LunchEnd?.ToString("HH:mm") ?? "00:00",
-                            MissingTime = missingTime > 0 ? TimeSpan.FromMinutes(missingTime).ToString(@"hh\:mm") : "00:00",
-                            Overtime = overtime > 0 ? TimeSpan.FromMinutes(overtime).ToString(@"hh\:mm") : "00:00"
-                        };
-                    })
-                    .ToList();
+                         return new
+                         {
+                             WorkDate = report.ReportDate.ToString("dd.MM.yyyy dddd", new CultureInfo("tr-TR")),
+                             WorkStartTime = report.WorkStart?.ToString("HH:mm") ?? "00:00",
+                             EndTime = report.WorkEnd?.ToString("HH:mm") ?? "00:00",
+                             LunchStartTime = report.LunchStart?.ToString("HH:mm") ?? "00:00",
+                             LunchEndTime = report.LunchEnd?.ToString("HH:mm") ?? "00:00",
+                             MissingTime = missingTime > 0 ? TimeSpan.FromMinutes(missingTime).ToString(@"hh\:mm") : "00:00",
+                             Overtime = overtime > 0 ? TimeSpan.FromMinutes(overtime).ToString(@"hh\:mm") : "00:00"
+                         };
+                     })
+                     .ToList();
 
                 var loggedDates = userReports.Select(r => r.ReportDate).Distinct().ToList();
                 var missingDates = daysInMonth.Except(loggedDates).ToList();
@@ -184,7 +175,7 @@ namespace WorkTrackingWpf
                             EndTime = "00:00",
                             LunchStartTime = "00:00",
                             LunchEndTime = "00:00",
-                            MissingTime = "09:00",
+                            MissingTime = TimeSpan.FromMinutes(540).ToString(@"hh\:mm"),
                             Overtime = "00:00"
                         });
 
@@ -193,7 +184,6 @@ namespace WorkTrackingWpf
                 }
 
                 groupedReports = groupedReports.OrderBy(r => DateTime.ParseExact(r.WorkDate.Split(' ')[0], "dd.MM.yyyy", null)).ToList();
-
                 ReportsDataGrid.ItemsSource = groupedReports;
 
                 TotalMissingTime.Text = FormatToTotalHours(totalMissingTime);
@@ -213,6 +203,7 @@ namespace WorkTrackingWpf
             int minutes = (int)(totalMinutes % 60);
             return $"{hours:D2}:{minutes:D2}";
         }
+
         private void MonthComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 

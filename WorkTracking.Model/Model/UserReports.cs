@@ -17,7 +17,8 @@
         public DateTime? LunchStart { get; set; }
         public DateTime? LunchEnd { get; set; }  
         public double MissingTime { get; set; }  
-        public double Overtime { get; set; }     
+        public double Overtime { get; set; }
+        public TimeSpan? IdleTime { get; set; }
         public Status Status { get; set; }       
         public DateTime ReportDate { get; set; } 
 

@@ -36,8 +36,14 @@
                 <ComboBoxItem Content="Aralık" Tag="12"/>
             </ComboBox>
 
-            <Label Content="Kullanıcı:" VerticalAlignment="Center" Margin="5"/>
-            <ComboBox x:Name="UserComboBox" HorizontalAlignment="Stretch" Margin="5" SelectionChanged="UserComboBox_SelectionChanged"/>
+            <ComboBox x:Name="UserComboBox"
+          HorizontalAlignment="Stretch"
+          Margin="5"
+          SelectedValuePath="UserId"
+          DisplayMemberPath="FullName"
+          SelectionChanged="UserComboBox_SelectionChanged"/>
+
+
 
             <Button Content="Filtrele" Width="100" Height="30" Margin="10,0,0,0" VerticalAlignment="Center" Click="FilterButton_Click"/>
         </StackPanel>

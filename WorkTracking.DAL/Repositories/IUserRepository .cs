@@ -10,7 +10,7 @@ namespace WorkTracking.DAL.Repositories
         Task AddAsync(User user);
         Task UpdateAsync(User user);
         Task DeleteAsync(int userId);
-        User GetLoggedInUser();
         User GetLoggedInUser(int userId);
+
     }
 }

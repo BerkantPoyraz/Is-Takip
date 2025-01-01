@@ -12,6 +12,7 @@ namespace WorkTrackingWpf
     public partial class App : Application
     {
         public static IServiceProvider ServiceProvider { get; private set; }
+        public static User CurrentUser { get; set; }
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -23,6 +24,7 @@ namespace WorkTrackingWpf
                 .Build();
 
             var serviceCollection = new ServiceCollection();
+
             serviceCollection.AddSingleton<IConfiguration>(configuration);
 
             serviceCollection.AddDbContext<AppDbContext>(options =>
@@ -38,55 +40,46 @@ namespace WorkTrackingWpf
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
-            if (!EnsureDatabaseMigrated())
-            {
-                Shutdown();
-            }
+            EnsureDatabaseMigrated();
         }
-
-        private bool EnsureDatabaseMigrated()
+        private void EnsureDatabaseMigrated()
         {
             try
             {
-                Console.WriteLine("Veritabanı bağlantısı kontrol ediliyor...");
                 using (var scope = ServiceProvider.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                    if (dbContext.Database.CanConnect())
+                    if (!dbContext.Database.CanConnect())
                     {
-                        Console.WriteLine("Veritabanı bağlantısı sağlandı.");
+                        dbContext.Database.EnsureCreated();
+                        MessageBox.Show("Veritabanı bulunamadı. Yeni bir veritabanı oluşturuldu.",
+                            "Bilgilendirme", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
                         var pendingMigrations = dbContext.Database.GetPendingMigrations().ToList();
 
                         if (pendingMigrations.Any())
                         {
-                            Console.WriteLine("Eksik migration'lar var, uygulama işlemi başlatılıyor...");
                             dbContext.Database.Migrate();
-                            MessageBox.Show($"Eksik migration'lar uygulandı:\n- {string.Join("\n- ", pendingMigrations)}",
+                            MessageBox.Show("Veritabanı migration işlemi başarılı bir şekilde tamamlandı.",
                                 "Bilgilendirme", MessageBoxButton.OK, MessageBoxImage.Information);
                         }
                         else
                         {
-                           // MessageBox.Show("Veritabanı güncel.", "Bilgilendirme", MessageBoxButton.OK, MessageBoxImage.Information);
+                            //MessageBox.Show("Veritabanı zaten güncel.",
+                            //    "Bilgilendirme", MessageBoxButton.OK, MessageBoxImage.Information);
                         }
-
-                        return true;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Veritabanı bağlantısı sağlanamadı. Lütfen SQL Server'ın çalıştığından ve bağlantı bilgilerinizi kontrol ettiğinizden emin olun.",
-                            "Bağlantı Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return false;
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Veritabanı işlemi sırasında hata: {ex.Message}");
-                MessageBox.Show($"Veritabanı işlemi sırasında bir hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
-                return false;
+                MessageBox.Show($"Veritabanı oluşturulurken veya migrate edilirken bir hata oluştu: {ex.Message}",
+                    "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Shutdown();
             }
         }
     }
-
 }

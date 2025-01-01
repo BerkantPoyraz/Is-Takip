@@ -64,12 +64,6 @@ namespace WorkTracking.DAL.Repositories
             }
         }
 
-        public User GetLoggedInUser()
-        {
-            var userId = 1; // Örnek kullanıcı ID
-            return _context.Users.FirstOrDefault(u => u.UserId == userId);
-        }
-
         public User GetLoggedInUser(int userId)
         {
             return _context.Users.FirstOrDefault(u => u.UserId == userId);

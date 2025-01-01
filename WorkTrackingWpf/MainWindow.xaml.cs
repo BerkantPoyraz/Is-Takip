@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WorkTracking.DAL.Repositories;
 using WorkTracking.Model.Model;
 using System.Security.Cryptography;
+using System.Windows.Input;
 
 namespace WorkTrackingWpf
 {
@@ -19,12 +20,14 @@ namespace WorkTrackingWpf
             InitializeComponent();
             _userRepository = App.ServiceProvider.GetRequiredService<IUserRepository>();
             SeedAdminUser();
+            this.Topmost = true;
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
         }
+
         private async Task SeedAdminUser()
         {
             var adminUser = await _userRepository.GetUserByUserNameAsync("Admin");
@@ -35,7 +38,7 @@ namespace WorkTrackingWpf
                     UserName = "Admin",
                     FirstName = "Admin",
                     LastName = "Admin",
-                    Password = "Admin123+", 
+                    Password = "Admin123+",
                     Role = UserRole.Admin,
                     Salary = 0,
                     HireDate = DateTime.Now
@@ -44,6 +47,7 @@ namespace WorkTrackingWpf
                 await _userRepository.AddAsync(newAdmin);
             }
         }
+
         private async void LoginButton_Click_1(object sender, RoutedEventArgs e)
         {
             string username = UserNameTextBox.Text;
@@ -59,6 +63,8 @@ namespace WorkTrackingWpf
 
             if (user != null)
             {
+                App.CurrentUser = user;
+
                 var projectRepository = App.ServiceProvider.GetRequiredService<IProjectRepository>();
                 var userRepository = App.ServiceProvider.GetRequiredService<IUserRepository>();
 
@@ -69,6 +75,22 @@ namespace WorkTrackingWpf
             else
             {
                 ErrorMessage.Text = "Geçersiz kullanıcı adı veya şifre.";
+            }
+        }
+
+        private void UserNameTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                LoginButton_Click_1(sender, e);
+            }
+        }
+
+        private void PasswordBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                LoginButton_Click_1(sender, e);
             }
         }
     }
