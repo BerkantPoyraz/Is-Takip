@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using WorkTracking.DAL.Repositories;
 using WorkTracking.Model.Model;
-using System.Security.Cryptography;
 using System.Windows.Input;
+using WorkTracking.DAL.Data;
 
 namespace WorkTrackingWpf
 {
@@ -19,7 +18,7 @@ namespace WorkTrackingWpf
         {
             InitializeComponent();
             _userRepository = App.ServiceProvider.GetRequiredService<IUserRepository>();
-            SeedAdminUser();
+            Loaded += async (s, e) => await SeedAdminUserAsync();
             this.Topmost = true;
         }
 
@@ -28,23 +27,26 @@ namespace WorkTrackingWpf
             Application.Current.Shutdown();
         }
 
-        private async Task SeedAdminUser()
+        private async Task SeedAdminUserAsync()
         {
-            var adminUser = await _userRepository.GetUserByUserNameAsync("Admin");
-            if (adminUser == null)
+            using (var dbContext = App.ServiceProvider.GetRequiredService<AppDbContext>())
             {
-                var newAdmin = new User
+                var adminUser = await dbContext.Users.FirstOrDefaultAsync(u => u.UserName == "MD");
+                if (adminUser == null)
                 {
-                    UserName = "Admin",
-                    FirstName = "Admin",
-                    LastName = "Admin",
-                    Password = "Admin123+",
-                    Role = UserRole.Admin,
-                    Salary = 0,
-                    HireDate = DateTime.Now
-                };
-
-                await _userRepository.AddAsync(newAdmin);
+                    var newAdmin = new User
+                    {
+                        UserName = "MD",
+                        FirstName = "Mehmet",
+                        LastName = "Demirci",
+                        Password = "md123", // Düz metin şifre
+                        Role = UserRole.Admin,
+                        Salary = 0,
+                        HireDate = DateTime.Now
+                    };
+                    await dbContext.Users.AddAsync(newAdmin);
+                    await dbContext.SaveChangesAsync();
+                }
             }
         }
 
@@ -59,6 +61,7 @@ namespace WorkTrackingWpf
                 return;
             }
 
+            // Şifre düz metin olarak kontrol edilir
             var user = await _userRepository.GetUserByCredentialsAsync(username, password);
 
             if (user != null)

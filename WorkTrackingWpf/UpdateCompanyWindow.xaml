@@ -1,0 +1,34 @@
+﻿<Window x:Class="WorkTrackingWpf.UpdateCompanyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Firma Güncelle" Height="545" Width="725">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Başlık -->
+        <TextBlock Text="Firma Güncelle" FontSize="24" FontWeight="Bold" Margin="10" />
+
+        <!-- Firma Güncelleme Alanları -->
+        <StackPanel Grid.Row="1" Orientation="Vertical" Margin="10">
+            <Label Content="Firma Adı:" />
+            <TextBox x:Name="CompanyNameTextBox" Height="30" Margin="5" />
+
+            <Label Content="Firma Ünvanı:" />
+            <TextBox x:Name="CompanyTitleTextBox" Height="30" Margin="5" />
+
+            <Label Content="Adres:" />
+            <TextBox x:Name="AddressTextBox" Height="30" Margin="5" />
+
+            <Label Content="Vergi Dairesi:" />
+            <TextBox x:Name="TaxOfficeTextBox" Height="30" Margin="5" />
+
+            <Label Content="Vergi No:" />
+            <TextBox x:Name="TaxNumberTextBox" Height="30" Margin="5" />
+
+            <Button Content="Güncelle" Background="#1ABC9C" Foreground="White" Height="40" Margin="5" Click="UpdateButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

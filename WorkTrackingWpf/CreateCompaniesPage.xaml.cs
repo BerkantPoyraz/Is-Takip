@@ -60,7 +60,7 @@ namespace WorkTrackingWpf
             }
         }
 
-        private async void LoadCompanies()
+        private async Task LoadCompanies()
         {
             try
             {
@@ -72,6 +72,7 @@ namespace WorkTrackingWpf
                 MessageBox.Show($"Firma bilgileri yüklenirken hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private void ClearFields()
         {
             CompanyNameTextBox.Clear();
@@ -80,5 +81,22 @@ namespace WorkTrackingWpf
             TaxOfficeTextBox.Clear();
             TaxNumberTextBox.Clear();
         }
+
+        private async void UpdateCompanyMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (CompanyDataGrid.SelectedItem is Company selectedCompany)
+            {
+                var updateWindow = new UpdateCompanyWindow(_dbContext, selectedCompany);
+                if (updateWindow.ShowDialog() == true) // Eğer güncelleme başarılıysa
+                {
+                    await LoadCompanies(); // Şirketleri yeniden yükle
+                }
+            }
+            else
+            {
+                MessageBox.Show("Lütfen bir firma seçin.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
     }
 }

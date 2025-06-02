@@ -1,33 +1,64 @@
 ﻿<Window x:Class="WorkTrackingWpf.ProjectSelectionPage"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Proje Seçim Ekranı" WindowState="Maximized" WindowStartupLocation="CenterScreen" WindowStyle="None">
+        xmlns:tb="http://www.hardcodet.net/taskbar"
+        Title="Proje Seçim Ekranı" WindowState="Maximized" 
+        WindowStartupLocation="CenterScreen" WindowStyle="None">
+
     <Window.Background>
         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
             <GradientStop Color="Black"/>
             <GradientStop Color="White" Offset="1"/>
         </LinearGradientBrush>
     </Window.Background>
+
     <Grid>
+        <tb:TaskbarIcon x:Name="TrayIcon"
+         ToolTipText="İş Takip Programı"
+         Visibility="Collapsed"
+         IconSource="pack://application:,,,/Resources/vem.ico"
+         MenuActivation="RightClick"
+         TrayMouseDoubleClick="TrayIcon_DoubleClick">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Göster" Click="ShowApp_Click"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+
+
+
+
         <Border Background="White" CornerRadius="10" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="50">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="10" ShadowDepth="0" Color="Black" Opacity="0.5"/>
             </Border.Effect>
 
-            <!-- ScrollViewer Eklendi -->
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="20">
                 <StackPanel>
                     <TextBlock Text="Proje Seçimi" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" TextAlignment="Center" Margin="0,0,0,20"/>
                     <Label Content="Proje Seçin:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="#2C3E50"/>
-                    <!-- Proje Seçimi için ComboBox -->
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="30" Margin="0,0,0,15">
-                        <ComboBox x:Name="ProjectsComboBox" Width="400" Height="30" Background="#ECF0F1" BorderBrush="#2C3E50" DisplayMemberPath="DisplayName" SelectedValuePath="ProjectId"/>
+                        <ComboBox x:Name="ProjectsComboBox" 
+                                  Width="400" 
+                                  Height="30" 
+                                  Background="#ECF0F1" 
+                                  BorderBrush="#2C3E50" 
+                                  DisplayMemberPath="DisplayName" 
+                                  SelectedValuePath="ProjectId" 
+                                  SelectionChanged="ProjectsComboBox_SelectionChanged" />
                     </ScrollViewer>
 
                     <Label Content="Yapılacak İş Seçin:" FontWeight="SemiBold" Margin="0,0,0,5" Foreground="#2C3E50"/>
-                    <!-- Yapılacak İş Seçimi için ComboBox -->
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Height="30" Margin="0,0,0,15">
-                        <ComboBox x:Name="ProjectTasksComboBox" Width="400" Height="30" Background="#ECF0F1" BorderBrush="#2C3E50" DisplayMemberPath="TaskName" SelectedValuePath="ProjectTaskId"/>
+                        <ComboBox x:Name="ProjectTasksComboBox" 
+                                  Width="400" 
+                                  Height="30" 
+                                  Background="#ECF0F1" 
+                                  BorderBrush="#2C3E50" 
+                                  DisplayMemberPath="TaskName" 
+                                  SelectedValuePath="ProjectTaskId" 
+                                  SelectionChanged="ProjectTasksComboBox_SelectionChanged"/>
                     </ScrollViewer>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
@@ -35,7 +66,12 @@
                         <Button Content="Çalışmayı Sonlandır" Width="150" Height="40" Background="#E74C3C" Foreground="White" FontWeight="Bold" Margin="5,0" Click="WorkEnd"/>
                         <Button Content="Rapor Onay" Width="150" Height="40" Background="#2ECC71" Foreground="White" FontWeight="Bold" Margin="5,0" Click="WorkConfirm"/>
                     </StackPanel>
-                    <!-- Admin Panel Butonu -->
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                        <Button Content="Güncelle" Width="150" Height="40" Background="#F39C12" Foreground="White" FontWeight="Bold" Margin="5,0" Click="UpdateProjectAndTask"/>
+                        <Button Content="Şifre Değiştir" Width="150" Height="40" Background="#8E44AD" Foreground="White" FontWeight="Bold" Margin="5,0" Click="ChangePassword"/>
+                    </StackPanel>
+
                     <Button x:Name="AdminPanelButton" Content="Yönetici Paneli" 
                             Width="150" Height="40" Background="#3498DB" Foreground="White" FontWeight="Bold" 
                             Margin="5,20,5,0" Visibility="Collapsed" Click="AdminPanelButton_Click"/>

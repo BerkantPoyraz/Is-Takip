@@ -1,8 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using WorkTracking.DAL.Data;
+using WorkTracking.DAL.Repositories;
 using WorkTracking.Model.Model;
 
 namespace WorkTrackingWpf
@@ -17,6 +23,7 @@ namespace WorkTrackingWpf
             InitializeComponent();
             _context = context;
             _projectId = projectId;
+            this.Topmost = true;
 
             Loaded += (s, e) => LoadData();
         }

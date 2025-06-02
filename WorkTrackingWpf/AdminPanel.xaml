@@ -8,7 +8,6 @@
 
     <Window.Resources>
         <!-- Link tarzı metin stili -->
-        
         <Style x:Key="LinkStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="Foreground" Value="#34495E"/>
             <Setter Property="FontSize" Value="16"/>
@@ -33,21 +32,23 @@
         <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="207" Margin="20,50,0,0">
             <TextBlock Text="Kullanıcı Ekle" Style="{StaticResource LinkStyle}" MouseLeftButtonDown="AddUserLink_Click" Height="25" FontFamily="Arial" FontWeight="Bold"/>
             <TextBlock Style="{StaticResource LinkStyle}" MouseLeftButtonDown="CreateProjectLink_Click" Height="25">
-        <Run Language="tr-tr" Text="Proje Ekle" FontFamily="Arial" FontWeight="Bold"/>
-        <LineBreak/><Run Language="tr-tr"/>
+                <Run Language="tr-tr" Text="Proje Ekle" FontFamily="Arial" FontWeight="Bold"/>
+                <LineBreak/><Run Language="tr-tr"/>
             </TextBlock>
             <TextBlock Style="{StaticResource LinkStyle}" MouseLeftButtonDown="CreateCompanyLink_Click" Height="25">
-        <Run Language="tr-tr" Text="Firma Ekle" FontFamily="Arial" FontWeight="Bold"/>
-        <LineBreak/><Run Language="tr-tr"/>
+                <Run Language="tr-tr" Text="Firma Ekle" FontFamily="Arial" FontWeight="Bold"/>
+                <LineBreak/><Run Language="tr-tr"/>
             </TextBlock>
             <TextBlock Style="{StaticResource LinkStyle}" MouseLeftButtonDown="ViewReportsLink_Click" Height="25">
-             <Run Language="tr-tr" Text="Kullanıcı Rapor" FontFamily="Arial" FontWeight="Bold"/>
-             <LineBreak/>
-             <Run Language="tr-tr"/>
+                <Run Language="tr-tr" Text="Kullanıcı Rapor" FontFamily="Arial" FontWeight="Bold"/>
+                <LineBreak/><Run Language="tr-tr"/>
             </TextBlock>
-
+            <!-- Yeni Proje Rapor Linki -->
+            <TextBlock Style="{StaticResource LinkStyle}" MouseLeftButtonDown="ViewProjectReportsLink_Click" Height="25">
+                <Run Language="tr-tr" Text="Proje Rapor" FontFamily="Arial" FontWeight="Bold"/>
+                <LineBreak/><Run Language="tr-tr"/>
+            </TextBlock>
         </StackPanel>
-
 
         <!-- İçerik Alanı: Sayfa İçeriği Burada Yüklenecek -->
         <Frame x:Name="ContentArea" Margin="227,50,20,10" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>

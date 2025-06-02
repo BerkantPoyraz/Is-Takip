@@ -1,0 +1,94 @@
+﻿<Page x:Class="WorkTrackingWpf.WorkLogPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d" 
+      d:DesignHeight="964" d:DesignWidth="1673"
+      Title="WorkLogPage">
+
+    <Grid Background="#ecf0f1" Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Başlık ve Filtreleme Alanı -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="10">
+                <TextBlock Text="Kullanıcı Kayıtları" 
+                           FontSize="14" 
+                           FontWeight="Bold" 
+                           Foreground="#34495E" 
+                           Margin="10,0,20,0" />
+
+                <!-- Kullanıcı Seçimi -->
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Label Content="Kullanıcı:" VerticalAlignment="Center" FontSize="18" />
+                    <ComboBox x:Name="UserFilterComboBox" Width="200" Margin="5" FontSize="18"/>
+                </StackPanel>
+
+                <!-- Proje Seçimi -->
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Label Content="Proje:" VerticalAlignment="Center" FontSize="18"/>
+                    <ComboBox x:Name="ProjectFilterComboBox" Width="200" Margin="5" FontSize="18" />
+                </StackPanel>
+
+                <!-- Görev Seçimi -->
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Label Content="Görev:" VerticalAlignment="Center" FontSize="18"/>
+                    <ComboBox x:Name="TaskFilterComboBox" Width="200" Margin="5" FontSize="18" />
+                </StackPanel>
+
+                <!-- 🔹 Tarih Filtreleme Eklendi -->
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Label Content="Tarih:" VerticalAlignment="Center" FontSize="18"/>
+                    <DatePicker x:Name="DateFilterPicker" Width="150" Margin="5" FontSize="18"/>
+                </StackPanel>
+
+                <!-- 🔹 Ay Filtreleme Eklendi -->
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Label Content="Ay:" VerticalAlignment="Center" FontSize="18"/>
+                    <ComboBox x:Name="MonthFilterComboBox" Width="150" Margin="5" FontSize="18">
+                        <ComboBoxItem Content="Tümü" Tag="0" IsSelected="True"/>
+                        <ComboBoxItem Content="Ocak" Tag="1"/>
+                        <ComboBoxItem Content="Şubat" Tag="2"/>
+                        <ComboBoxItem Content="Mart" Tag="3"/>
+                        <ComboBoxItem Content="Nisan" Tag="4"/>
+                        <ComboBoxItem Content="Mayıs" Tag="5"/>
+                        <ComboBoxItem Content="Haziran" Tag="6"/>
+                        <ComboBoxItem Content="Temmuz" Tag="7"/>
+                        <ComboBoxItem Content="Ağustos" Tag="8"/>
+                        <ComboBoxItem Content="Eylül" Tag="9"/>
+                        <ComboBoxItem Content="Ekim" Tag="10"/>
+                        <ComboBoxItem Content="Kasım" Tag="11"/>
+                        <ComboBoxItem Content="Aralık" Tag="12"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <Button Content="Filtrele" Width="140" Height="40" Margin="10" Click="FilterButton_Click" FontSize="18"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- İş ve Görev Tablosu -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" PreviewMouseWheel="WorkLogDataGrid_PreviewMouseWheel">
+            <DataGrid x:Name="WorkLogDataGrid"
+              AutoGenerateColumns="False"
+              Margin="10"
+              IsReadOnly="True"
+              CanUserSortColumns="True"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Tarih" Binding="{Binding Tarih}" Width="*" />
+                    <DataGridTextColumn Header="Adı Soyadı" Binding="{Binding FullName}" Width="*" />
+                    <DataGridTextColumn Header="Proje Adı" Binding="{Binding ProjectName}" Width="*" />
+                    <DataGridTextColumn Header="Görev Adı" Binding="{Binding TaskName}" Width="*" />
+                    <DataGridTextColumn Header="Başlama Zamanı" Binding="{Binding StartTime, StringFormat={}{0:dd.MM.yyyy HH:mm}}" Width="*" />
+                    <DataGridTextColumn Header="Bitiş Zamanı" Binding="{Binding EndTime, StringFormat={}{0:dd.MM.yyyy HH:mm}}" Width="*" />
+                    <DataGridTextColumn Header="Toplam Süre" Binding="{Binding TotalDuration}" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </ScrollViewer>
+    </Grid>
+</Page>

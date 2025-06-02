@@ -17,42 +17,53 @@
             <ComboBox x:Name="YearComboBox" HorizontalAlignment="Stretch" Margin="5" SelectionChanged="YearComboBox_SelectionChanged"/>
             <Label Content="Ay:" VerticalAlignment="Center" Margin="5"/>
             <ComboBox x:Name="MonthComboBox" HorizontalAlignment="Stretch" Margin="5" SelectionChanged="MonthComboBox_SelectionChanged">
-                <ComboBoxItem Content="Ocak" Tag="1"/>
-                <ComboBoxItem Content="Şubat" Tag="2"/>
-                <ComboBoxItem Content="Mart" Tag="3"/>
-                <ComboBoxItem Content="Nisan" Tag="4"/>
-                <ComboBoxItem Content="Mayıs" Tag="5"/>
-                <ComboBoxItem Content="Haziran" Tag="6"/>
-                <ComboBoxItem Content="Temmuz" Tag="7"/>
-                <ComboBoxItem Content="Ağustos" Tag="8"/>
-                <ComboBoxItem Content="Eylül" Tag="9"/>
-                <ComboBoxItem Content="Ekim" Tag="10"/>
-                <ComboBoxItem Content="Kasım" Tag="11"/>
-                <ComboBoxItem Content="Aralık" Tag="12"/>
+                <ComboBoxItem Tag="1"/>
+                <ComboBoxItem Tag="2"/>
+                <ComboBoxItem Tag="3"/>
+                <ComboBoxItem Tag="4"/>
+                <ComboBoxItem Tag="5"/>
+                <ComboBoxItem Tag="6"/>
+                <ComboBoxItem Tag="7"/>
+                <ComboBoxItem Tag="8"/>
+                <ComboBoxItem Tag="9"/>
+                <ComboBoxItem Tag="10"/>
+                <ComboBoxItem Tag="11"/>
+                <ComboBoxItem Tag="12"/>
             </ComboBox>
             <Button Content="Filtrele" Width="100" Height="30" Margin="10,0,0,0" VerticalAlignment="Center" Click="FilterButton_Click"/>
         </StackPanel>
-        <DataGrid Name="ReportsDataGrid" AutoGenerateColumns="False" Margin="10" Grid.Row="1" SelectionMode="Single" HorizontalScrollBarVisibility="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsReadOnly="True" PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown" PreviewMouseDoubleClick="DataGrid_PreviewMouseDoubleClick" IsHitTestVisible="False">
+        <DataGrid Name="ReportsDataGrid" AutoGenerateColumns="False" Margin="10" Grid.Row="1"
+          SelectionMode="Extended" HorizontalScrollBarVisibility="Auto"
+          VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Gün" Binding="{Binding WorkDate}" Width="150"/>
-                <DataGridTextColumn Header="Başlangıç Saati" Binding="{Binding WorkStartTime}" Width="150"/>
-                <DataGridTextColumn Header="Öğlen Çıkış" Binding="{Binding LunchStartTime}" Width="150"/>
-                <DataGridTextColumn Header="Öğlen Giriş" Binding="{Binding LunchEndTime}" Width="150"/>
-                <DataGridTextColumn Header="Çıkış Saati" Binding="{Binding EndTime, StringFormat='{}{0:HH:mm}'}" Width="150"/>
-                <DataGridTextColumn Header="Eksik Mesai Saati" Binding="{Binding MissingTime}" Width="150"/>
-                <DataGridTextColumn Header="Fazla Mesai Saati" Binding="{Binding Overtime}" Width="150"/>
+                <DataGridTextColumn Header="Gün" Binding="{Binding WorkDate}" Width="150" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Başlangıç Saati" Binding="{Binding WorkStartTime}" Width="150" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Öğlen Çıkış" Binding="{Binding LunchStartTime}" Width="150" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Öğlen Giriş" Binding="{Binding LunchEndTime}" Width="150" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Çıkış Saati" Binding="{Binding EndTime, StringFormat='{}{0:HH:mm}'}" Width="150" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Eksik Mesai Saati" Binding="{Binding MissingTime}" Width="150" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Fazla Mesai Saati" Binding="{Binding Overtime}" Width="150" IsReadOnly="True"/>
+                <DataGridTemplateColumn Header="Durum">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Status}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding DataContext.FilteredStatuses, RelativeSource={RelativeSource AncestorType=Window}}"
+                              SelectedItem="{Binding Status, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="10">
-            <TextBlock Text="Toplam Eksik Mesai: " FontWeight="Bold" VerticalAlignment="Center" Margin="5"/>
-            <TextBlock x:Name="TotalMissingTime" Margin="5" VerticalAlignment="Center"/>
-
-            <TextBlock Text="Toplam Fazla Mesai: " FontWeight="Bold" VerticalAlignment="Center" Margin="20"/>
-            <TextBlock x:Name="TotalOvertime" Margin="5" VerticalAlignment="Center"/>
-
             <TextBlock Text="Toplam Net Mesai Saati: " FontWeight="Bold" VerticalAlignment="Center" Margin="20"/>
             <TextBlock x:Name="TotalNetWorkDuration" Margin="5" VerticalAlignment="Center"/>
+            <Button Content="Onayla" Width="100" Height="30" Margin="5" Click="ApproveButton_Click"/>
+            <Button Content="Hata Bildir" Width="100" Height="30" Margin="5" Click="ReportErrorButton_Click"/>
         </StackPanel>
     </Grid>
 </Window>

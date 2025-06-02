@@ -22,6 +22,22 @@ namespace WorkTracking.DAL.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("NewTask", b =>
+                {
+                    b.Property<int>("TaskId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskId"));
+
+                    b.Property<string>("TaskName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("TaskId");
+
+                    b.ToTable("Tasks");
+                });
+
             modelBuilder.Entity("User", b =>
                 {
                     b.Property<int>("UserId")
@@ -135,6 +151,9 @@ namespace WorkTracking.DAL.Migrations
                     b.Property<DateTime>("ProjectStartTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("ProjectStatus")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -163,14 +182,71 @@ namespace WorkTracking.DAL.Migrations
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
-                    b.Property<string>("TaskName")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("TaskId")
+                        .HasColumnType("int");
 
                     b.HasKey("ProjectTaskId");
 
                     b.HasIndex("ProjectId");
 
+                    b.HasIndex("TaskId");
+
                     b.ToTable("ProjectTasks");
+                });
+
+            modelBuilder.Entity("WorkTracking.Model.Model.TaskWithSelection", b =>
+                {
+                    b.Property<int>("CheckId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsChecked")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("TaskId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("TaskId");
+
+                    b.ToTable("TaskWithSelections");
+                });
+
+            modelBuilder.Entity("WorkTracking.Model.Model.UserReports", b =>
+                {
+                    b.Property<int>("UserReportsId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserReportsId"));
+
+                    b.Property<TimeSpan?>("IdleTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime?>("LunchEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LunchStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ReportDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("WorkEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("WorkStart")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("UserReportsId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserReports");
                 });
 
             modelBuilder.Entity("WorkTracking.Model.Model.WorkLog", b =>
@@ -182,18 +258,6 @@ namespace WorkTracking.DAL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WorkLogId"));
 
                     b.Property<DateTime?>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("HasError")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsApproved")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LunchBreakEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LunchBreakStart")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("ProjectId")
@@ -250,7 +314,35 @@ namespace WorkTracking.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("NewTask", "Task")
+                        .WithMany("ProjectTasks")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Project");
+
+                    b.Navigation("Task");
+                });
+
+            modelBuilder.Entity("WorkTracking.Model.Model.TaskWithSelection", b =>
+                {
+                    b.HasOne("NewTask", "Task")
+                        .WithMany()
+                        .HasForeignKey("TaskId");
+
+                    b.Navigation("Task");
+                });
+
+            modelBuilder.Entity("WorkTracking.Model.Model.UserReports", b =>
+                {
+                    b.HasOne("User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("WorkTracking.Model.Model.WorkLog", b =>
@@ -277,6 +369,11 @@ namespace WorkTracking.DAL.Migrations
                     b.Navigation("ProjectTask");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("NewTask", b =>
+                {
+                    b.Navigation("ProjectTasks");
                 });
 
             modelBuilder.Entity("User", b =>

@@ -1,13 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
-using WorkTracking.DAL.Data;
-using WorkTracking.Model.Model;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Collections.Generic;
-using System.Globalization;
+using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using WorkTracking.DAL.Data;
+using WorkTracking.DAL.Repositories;
+using WorkTracking.Model.Model;
 
 namespace WorkTrackingWpf
 {
@@ -33,14 +37,14 @@ namespace WorkTrackingWpf
 
         private void LoadProjects()
         {
-            var projects = _context.Projects
+            _allProjects = _context.Projects
                 .Include(p => p.Company)
                 .Include(p => p.ContractType)
                 .ToList();
 
-            ProjectsDataGrid.ItemsSource = projects;
+            ProjectsDataGrid.ItemsSource = _allProjects;
 
-            TaskSelectionComboBox.ItemsSource = projects;
+            TaskSelectionComboBox.ItemsSource = _allProjects;
             TaskSelectionComboBox.DisplayMemberPath = "ProjectName";
             TaskSelectionComboBox.SelectedValuePath = "ProjectId";
         }
@@ -141,7 +145,7 @@ namespace WorkTrackingWpf
             _context.Projects.Add(newProject);
             _context.SaveChanges();
 
-            LoadProjects();
+            LoadData();
             ClearFormFields();
 
             MessageBox.Show("Proje başarıyla kaydedildi.");
@@ -198,6 +202,9 @@ namespace WorkTrackingWpf
             }
 
             _context.SaveChanges();
+
+            LoadData();
+
             MessageBox.Show("Görevler projeye başarıyla atanmıştır.");
         }
 
@@ -230,7 +237,10 @@ namespace WorkTrackingWpf
         private void ProjectSelectionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (TaskSelectionComboBox.SelectedValue == null)
+            {
+                TaskSelectionListBox.ItemsSource = null;
                 return;
+            }
 
             int selectedProjectId = (int)TaskSelectionComboBox.SelectedValue;
 
@@ -250,6 +260,7 @@ namespace WorkTrackingWpf
 
             TaskSelectionListBox.ItemsSource = tasksWithSelection;
         }
+
         private async void SaveContractTypeButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(ContractTypeNameTextBox.Text))
@@ -267,6 +278,8 @@ namespace WorkTrackingWpf
 
             _context.ContractTypes.Add(newContractType);
             await _context.SaveChangesAsync();
+
+            LoadData(); 
 
             MessageBox.Show("Sözleşme türü başarıyla kaydedildi!");
             ContractTypeNameTextBox.Clear();
@@ -312,6 +325,61 @@ namespace WorkTrackingWpf
             {
                 MessageBox.Show("Seçilen proje veritabanında bulunamadı.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private List<Project> _allProjects; 
+
+        private void StatusFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_allProjects == null || ProjectsDataGrid == null)
+                return;
+
+            if (StatusFilterComboBox.SelectedItem is ComboBoxItem comboItem)
+            {
+                string filterTag = comboItem.Tag as string;
+
+                IEnumerable<Project> filtered;
+
+                switch (filterTag)
+                {
+                    case "All":
+                        filtered = _allProjects; 
+                        break;
+
+                    case "Aktif":
+                        filtered = _allProjects.Where(p => p.ProjectStatus.ToString() == "Aktif");
+                        break;
+
+                    case "Pasif":
+                        filtered = _allProjects.Where(p => p.ProjectStatus.ToString() == "Pasif");
+                        break;
+
+                    default:
+                        filtered = _allProjects; 
+                        break;
+                }
+
+                ProjectsDataGrid.ItemsSource = filtered.ToList();
+            }
+        }
+        private void ProjectsDataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            var scrollViewer = FindParent<ScrollViewer>(ProjectsDataGrid);
+            if (scrollViewer != null)
+            {
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta / 3);
+                e.Handled = true;
+            }
+        }
+
+        private static T FindParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parent = VisualTreeHelper.GetParent(child);
+            while (parent != null && !(parent is T))
+            {
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return parent as T;
         }
     }
 }

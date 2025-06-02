@@ -40,71 +40,72 @@ namespace WorkTracking.DAL.Data
             }
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Company>()
-                .HasKey(c => c.CompanyId);
+{
+    modelBuilder.Entity<Company>()
+        .HasKey(c => c.CompanyId);
 
-            modelBuilder.Entity<Project>()
-                .HasKey(p => p.ProjectId);
+    modelBuilder.Entity<Project>()
+        .HasKey(p => p.ProjectId);
 
-            modelBuilder.Entity<Project>()
-                .HasOne(p => p.ContractType)
-                .WithMany()
-                .HasForeignKey(p => p.ContractTypeId)
-                .OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<Project>()
+        .HasOne(p => p.ContractType)
+        .WithMany() 
+        .HasForeignKey(p => p.ContractTypeId)
+        .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Project>()
-                .HasMany(p => p.ProjectTasks)
-                .WithOne(t => t.Project)
-                .HasForeignKey(t => t.ProjectId);
+    modelBuilder.Entity<Project>()
+        .HasMany(p => p.ProjectTasks)
+        .WithOne(t => t.Project)
+        .HasForeignKey(t => t.ProjectId);
 
-            modelBuilder.Entity<WorkLog>()
-                .HasOne(w => w.Project)
-                .WithMany(p => p.WorkLogs)
-                .HasForeignKey(w => w.ProjectId)
-                .OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<WorkLog>()
+        .HasOne(w => w.Project)
+        .WithMany(p => p.WorkLogs)
+        .HasForeignKey(w => w.ProjectId)
+        .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<WorkLog>()
-                .HasOne(w => w.User)
-                .WithMany(u => u.WorkLogs)
-                .HasForeignKey(w => w.UserId);
+    modelBuilder.Entity<WorkLog>()
+        .HasOne(w => w.User)
+        .WithMany(u => u.WorkLogs)
+        .HasForeignKey(w => w.UserId);
 
-            modelBuilder.Entity<WorkLog>()
-                .HasOne(w => w.ProjectTask)
-                .WithMany(t => t.WorkLogs)
-                .HasForeignKey(w => w.ProjectTaskId)
-                .OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<WorkLog>()
+        .HasOne(w => w.ProjectTask)
+        .WithMany(t => t.WorkLogs)
+        .HasForeignKey(w => w.ProjectTaskId)
+        .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<ProjectTask>()
-                .HasOne(pt => pt.Task)
-                .WithMany(nt => nt.ProjectTasks)
-                .HasForeignKey(pt => pt.TaskId)
-                .OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<ProjectTask>()
+        .HasOne(pt => pt.Task)
+        .WithMany(nt => nt.ProjectTasks)
+        .HasForeignKey(pt => pt.TaskId)
+        .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<NewTask>()
-                .HasKey(C => C.TaskId);
+    modelBuilder.Entity<NewTask>()
+        .HasKey(C => C.TaskId);
 
-            modelBuilder.Entity<ContractType>()
-                .HasKey(c => c.ContractTypeId);
+    modelBuilder.Entity<ContractType>()
+        .HasKey(c => c.ContractTypeId);
 
-            modelBuilder.Entity<UserReports>()
-                .HasKey(ur => ur.UserReportsId);
+    modelBuilder.Entity<UserReports>()
+        .HasKey(ur => ur.UserReportsId);
 
-            modelBuilder.Entity<UserReports>()
-                .HasOne(ur => ur.User)
-                .WithMany()
-                .HasForeignKey(ur => ur.UserId);
+    modelBuilder.Entity<UserReports>()
+        .HasOne(ur => ur.User)
+        .WithMany()
+        .HasForeignKey(ur => ur.UserId);
 
-            base.OnModelCreating(modelBuilder);
+    // Property conversion for UserReports Status
+    modelBuilder.Entity<UserReports>()
+        .Property(u => u.Status)
+        .HasConversion<int>();
 
-            modelBuilder.Entity<UserReports>()
-                .Property(u => u.Status)
-                .HasConversion<int>();
+    // TaskWithSelection doesn't need a key
+    modelBuilder.Entity<TaskWithSelection>().HasNoKey();
 
-        modelBuilder.Entity<TaskWithSelection>().HasNoKey();
+    base.OnModelCreating(modelBuilder);
+}
 
-            base.OnModelCreating(modelBuilder);
-        }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Project> Projects { get; set; }

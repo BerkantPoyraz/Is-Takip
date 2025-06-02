@@ -35,6 +35,7 @@ namespace WorkTrackingWpf
             SalaryTextBox.Text = _user.Salary.ToString("N0");
             HireDatePicker.SelectedDate = _user.HireDate;
             RoleComboBox.SelectedItem = _user.Role == UserRole.Admin ? "Admin" : "Kullanıcı";
+            this.Topmost = true;
         }
 
         private async void UpdateButton_Click(object sender, RoutedEventArgs e)

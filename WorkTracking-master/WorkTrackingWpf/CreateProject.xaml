@@ -1,0 +1,144 @@
+﻿<Page x:Class="WorkTrackingWpf.CreateProject"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:WorkTrackingWpf"
+      mc:Ignorable="d"
+      Title="CreateProject" Height="964" Width="1673" AutomationProperties.IsOffscreenBehavior="FromClip">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0*"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <!-- Sekmeler için TabControl -->
+        <TabControl AutomationProperties.IsOffscreenBehavior="Onscreen" Grid.RowSpan="2">
+            <!-- Proje Ekle Sekmesi -->
+            <TabItem Header="Proje Ekle">
+                <StackPanel Margin="10">
+                    <Grid Margin="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Sol Sütun -->
+                        <StackPanel Orientation="Vertical" Margin="0,10,0,10" Grid.Column="0">
+                            <!-- Firma Adı -->
+                            <Label Content="Firma Adı:" />
+                            <ComboBox x:Name="CompanyComboBox" Height="40" Width="300" Margin="5"/>
+
+                            <!-- İş Adı -->
+                            <Label Content="İş Adı:" />
+                            <TextBox x:Name="JobNameTextBox" Height="40" Width="300" Margin="5"/>
+
+                            <!-- Proje Başlangıç Tarihi -->
+                            <Label Content="Proje Başlangıç Tarihi:" />
+                            <DatePicker x:Name="ProjectStartDatePicker" Height="40" Width="300" Margin="5"/>
+
+                            <!-- Proje Bitiş Tarihi -->
+                            <Label Content="Proje Bitiş Tarihi (Opsiyonel):" />
+                            <DatePicker x:Name="ProjectEndDatePicker" Height="40" Width="300" Margin="5"/>
+                        </StackPanel>
+
+                        <!-- Sağ Sütun -->
+                        <StackPanel Orientation="Vertical" Margin="0,10,0,10" Grid.Column="1">
+                            <!-- İş No -->
+                            <Label Content="İş No:" />
+                            <TextBox x:Name="JobNumberTextBox" Height="40" Width="300" Margin="5"/>
+
+                            <!-- Sözleşme Türü -->
+                            <Label Content="Sözleşme Türü:" />
+                            <ComboBox x:Name="ContractTypeComboBox" Height="40" Width="300" Margin="5"/>
+
+                            <!-- Sözleşme Cinsi -->
+                            <Label Content="Sözleşme Cinsi:" />
+                            <ComboBox x:Name="ContractCurrencyComboBox" Height="40" Width="300" Margin="5"/>
+
+                            <!-- Sözleşme Miktarı -->
+                            <Label Content="Sözleşme Miktarı:" />
+                            <TextBox x:Name="ContractAmountTextBox" Height="40" Width="300" Margin="5"/>
+
+                            <!-- Birim Başına Miktar -->
+                            <Label Content="Birim Başına Miktar:" />
+                            <TextBox x:Name="UnitAmountTextBox" Height="40" Width="300" Margin="5"/>
+                        </StackPanel>
+                    </Grid>
+                    <Button x:Name="SaveProjectButton" Content="Proje Kaydet" Background="#1ABC9C" Foreground="White" FontWeight="Bold" Height="40" Width="300" Margin="5" Click="SaveProjectButton_Click"/>
+                    <!-- Proje Kaydet Butonu -->
+
+                    <DataGrid x:Name="ProjectsDataGrid" Height="350" Width="Auto" AutoGenerateColumns="False" SelectionMode="Single" SelectionUnit="FullRow"
+          SelectedItem="{Binding SelectedProject}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Proje No" Binding="{Binding ProjectNumber}" Width="*" />
+                            <DataGridTextColumn Header="Proje Adı" Binding="{Binding ProjectName}" Width="*" />
+                            <DataGridTextColumn Header="Firma Adı" Binding="{Binding Company.CompanyName}" Width="*" />
+                            <DataGridTextColumn Header="Başlangıç Tarihi" Binding="{Binding ProjectStartTime, StringFormat={}{0:dd.MM.yyyy}}" Width="*" />
+                            <DataGridTextColumn Header="Bitiş Tarihi" Binding="{Binding ProjectEndTime, StringFormat={}{0:dd.MM.yyyy}}" Width="*" />
+                            <DataGridTextColumn Header="Sözleşme Miktarı" Binding="{Binding ContractAmount, StringFormat=N2}" />
+                            <DataGridTextColumn Header="Birim Miktar" Binding="{Binding UnitAmount, StringFormat=N2}" />
+                            <DataGridTextColumn Header="Sözleşme Cinsi" Binding="{Binding ContractCurrency}" Width="*" />
+                            <DataGridTextColumn Header="Sözleşme Türü" Binding="{Binding ContractType.ContractTypeName}" Width="*" />
+                            <DataGridTextColumn Header="Toplam Miktar" Binding="{Binding TotalAmount, StringFormat=N2}" />
+                            <DataGridTextColumn Header="Durum" Binding="{Binding ProjectStatus}" Width="*" />
+                        </DataGrid.Columns>
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Proje Güncelle" Click="UpdateProject_Click" />
+                                <MenuItem Header="Durumu Aktif Yap" Click="SetStatusActive_Click" />
+                                <MenuItem Header="Durumu Pasif Yap" Click="SetStatusPassive_Click" />
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                    </DataGrid>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="İş Tanımlama ve Sözleşme Türü">
+                <StackPanel Margin="10">
+                    <GroupBox Header="İş Tanımlama" Margin="10">
+                        <StackPanel Orientation="Vertical" Margin="10">
+                            <Label Content="İş Adı:" />
+                            <TextBox x:Name="SaveNewTaskBox" Height="40" Width="300" Margin="5" />
+                            <Button x:Name="AddTaskButton" Content="İş Kaydet" Background="Green" Foreground="White" FontWeight="Bold" Height="40" Width="300" Margin="5" Click="AddTaskButton_Click" />
+                        </StackPanel>
+                    </GroupBox>
+                    <!-- Projeye Görev Atama -->
+                    <GroupBox Header="Proje Görev Atama" Margin="10">
+                        <StackPanel Orientation="Vertical" Margin="10">
+                            <!-- Proje Seçimi -->
+                            <Label Content="Proje Seç:" />
+                            <ComboBox x:Name="TaskSelectionComboBox" Height="40" Width="300" Margin="5"
+                  DisplayMemberPath="ProjectName" SelectedValuePath="ProjectId"
+                  SelectionChanged="ProjectSelectionComboBox_SelectionChanged" />
+
+                            <!-- Görev Seçimi -->
+                            <Label Content="Görevler:" />
+                            <ListBox Name="TaskSelectionListBox" SelectionMode="Multiple" Height="200" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox IsChecked="{Binding IsChecked}" Content="{Binding Task.TaskName}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Button x:Name="SaveJobButton" Content="Görev Tanımla" Background="#1ABC9C" Foreground="White" FontWeight="Bold" Height="40" Width="300" Margin="5" Click="SaveJobButton_Click" />
+                        </StackPanel>
+                    </GroupBox>
+                    <!-- Sözleşme Türü Tanımlama Bölümü -->
+                    <GroupBox Header="Sözleşme Türü Tanımlama" Margin="10">
+                        <StackPanel Orientation="Vertical" Margin="10">
+                            <!-- Sözleşme Türü Adı -->
+                            <Label Content="Sözleşme Türü Adı:" />
+                            <TextBox x:Name="ContractTypeNameTextBox" Height="40" Width="300" Margin="5"/>
+
+                            <!-- Kaydet Butonu -->
+                            <Button x:Name="SaveContractTypeButton" Content="Türü Kaydet" Background="#1ABC9C" Foreground="White" FontWeight="Bold" Height="40" Width="300" Margin="5" Click="SaveContractTypeButton_Click" />
+                        </StackPanel>
+                    </GroupBox>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Page>

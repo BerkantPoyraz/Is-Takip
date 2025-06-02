@@ -36,5 +36,9 @@ namespace WorkTrackingWpf
             AdminUserReport adminReportsLog = new AdminUserReport(_context);
             adminReportsLog.Show();
         }
+        private void ViewProjectReportsLink_Click(object sender, MouseButtonEventArgs e)
+        {
+            ContentArea.Content = new WorkLogPage(_context);
+        }
     }
 }

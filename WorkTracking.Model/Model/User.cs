@@ -23,3 +23,4 @@ public class User
     public string SalaryFormatted => Salary.ToString("N0");
 
 }
+

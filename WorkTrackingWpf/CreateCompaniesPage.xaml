@@ -71,6 +71,13 @@
                 <DataGridTextColumn Header="Vergi Dairesi" Binding="{Binding TaxOffice}" Width="*" />
                 <DataGridTextColumn Header="Vergi No" Binding="{Binding TaxNumber}" Width="*" />
             </DataGrid.Columns>
+
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Firma Güncelle" Click="UpdateCompanyMenuItem_Click" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+
         </DataGrid>
     </Grid>
 </Page>
